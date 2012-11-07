@@ -13,6 +13,8 @@
 import networkx as nx
 import sys
 import matplotlib.pyplot as plt
+import pygraphviz as pgv
+import operator
 
 #Create list of haplotypes
 haplotype = []
@@ -21,7 +23,7 @@ haplotype = []
 frequency = []
 
 #Open data file in read mode
-with open('/Users/mp18/Documents/Python/Data/Table_3', 'r') as f:
+with open('/Users/mp18/Documents/Python/Data/Table_1', 'r') as f:
     data = f.read()
 f.close()
 
@@ -95,9 +97,7 @@ def add_edge_from_cnode(G,c,h,l):
     
         #Add edge from cnode to level[j+1]+1
         G.add_edge(c, (level[l+1]+1), weight=frequency[h], allele=haplotype[h][l])
-       
-        print 'nodes'
-        print G.edges(data=True)
+      
     
     
 
@@ -126,7 +126,8 @@ for i in range(haplonum):
 
         #For each allele in haplotype
         for j in range(haplolength):
-            
+
+                       
             #If no nodes have been created, add first edge between node 1 and node 2
             if level[haplolength] == 0:
                 G.add_edge(1, 2, weight=frequency[i], allele=haplotype[i][j])
@@ -145,27 +146,49 @@ for i in range(haplonum):
             #If current node has at least one outgoing edge 
             else:
                 snode = check_for_existing_edge(cnode, haplotype[i][j])
-                
+                 
                 
                 #If no edges have the same allele
                 if snode == 0:           
                     add_edge_from_cnode(G,cnode,i, j)
                     add_node_to_level(j+1)
+                    cnode = level[j+1]
+                    
                 #If there exists an edge with the same allele
                 else:
 
                     G[cnode][snode]['weight'] = G[cnode][snode]['weight'] + frequency[i]
                     cnode = snode
 
-           
-       
+          
+      
+H=G.to_undirected()        
                     
-                    
-                
-labels=nx.draw_networkx_labels(G,pos=nx.spring_layout(G))
-edge_labels=nx.draw_networkx_edge_labels(G,pos=nx.spring_layout(G))
-nx.draw_networkx(G)
+        
+prog='dot'
+pos=nx.drawing.graphviz_layout(H, prog)
+
+#Mark edges with labels corresponding to the weight of the edge
+edge_labels=dict([((u,v,),d['weight'])
+             for u,v,d in H.edges(data=True)])
+nx.draw_networkx_edge_labels(G,pos,edge_labels=edge_labels)
+
+edge_colours=[]
+for u,v,d in H.edges(data=True):
+    if d['allele'] == '1':
+        edge_colours.append('MidnightBlue')
+    else:
+        edge_colours.append('LightBlue')
+        
+node_colours=range(H.number_of_nodes())
+
+nx.draw(H, pos, node_size=100, node_color='w', edge_color=edge_colours, width=4, cmap=node_cmap, with_labels=False)
+
 plt.show()
+
+
+
+
 
 
            
