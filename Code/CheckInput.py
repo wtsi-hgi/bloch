@@ -16,6 +16,7 @@ import sys
 import matplotlib.pyplot as plt
 import pygraphviz as pgv
 import operator
+import os
 
 #Create list of haplotypes
 haplotype = []
@@ -36,17 +37,24 @@ count = 0
 for word in data.split():
     
     if count==0:
+        for i in range(len(word)):
+           
+           if  word[i] not in ("1", "2"):
+                               
+               raise ValueError("Haplotypes contain value that is not 1 or 2")
+         
         #Haplotypes stored as strings and appended to the list haplotype.
         haplotype.append(word)
         count = 1
         continue
     
     elif count==1:        
-        
-        #Frequencies stored as integers and appended to the list frequency
-        num = int(word)
-
-       
+        try:
+            #Frequencies stored as integers and appended to the list frequency
+            num = int(word)
+            
+        except ValueError:
+            print "Error: Frequency data contains a non-integer"
         
         frequency.append(num)
         count = 0
@@ -64,14 +72,8 @@ for i in range(haplonum):
 
     #Checks that each haplotype in each iteration is the same length. If not, error is printed.
     if haplolength != len(haplotype[i]):
-        print ("Error: Haplotype number" + i + "is not the same length") 
+        print ("Error: Haplotype number " + str(i) + " is not the same length") 
         break
-
-    
-
-
-
-
 
 
     
