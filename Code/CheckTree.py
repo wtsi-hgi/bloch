@@ -19,39 +19,69 @@ import operator
 
 from CreateTree import *
 
-TestName=["DAG", "APERIODIC", "ROOT NODE", "LEAF"]
+TestName=[]
 CheckList=[]
     
 #DAG TEST: Check that the graph is a directed acyclic graph (DAG)
 CheckList.append(is_directed_acyclic_graph(G))
+TestName.append("DAG")
         
-       
 #APERIODIC TEST: Check that graph is aperiodic
 CheckList.append(is_aperiodic(G))
+TestName.append("APERIODIC")
+
+#ROOT NODE TEST: Check that the first level only contains one root node
+#ie. Level[1] begins with number 2
+if level[1] == 3:
+    CheckList.append(True)
+else:
+    CheckList.append(False)
+
+TestName.append("ROOT NODE")
+
+#LEAVES TEST: Check that the number of nodes on the last level is equal to the
+#number of unique haplotypes.
+hapnum = len(list(set(haplotype)))
+
+if hapnum == (level[len(level)] - level[len(level)-1]):
+    CheckList.append(True)
+else:
+    CheckList.append(False)
+
+TestName.append("LEAVES")
+
+#EDGES TEST: Check that each edge is connected between nodes which are on consecutive levels
+
+def whichlevel(node):
+    for i in range(len(level)):
+        if level[i] < node <= level[i+1]:
+            return 
 
 
-#ROOT NODE TEST: Check that the graph only contains one root node
-PDic = nx.dfs_predecessors(G)
-for i in range level
 
-        #Check that there is only one root node
+for i in nx.bfs_edges(G, 1):
+    
 
 
 
 
-        #Check the number of leaves = no of haplotypes
+TestName.append("EDGES")
+
+
+
+
 
 
 
         #Check that the number of nodes on each path is the length of the haplotypes no of levels = no of alleles\
 
         
+        #Check there exists a path between root node and all leaf nodes
+        #Check length of all paths is the same + same as length of haplotype
 
-
-
-def CheckTree(iterable):
-    for i in range(iterable):
-        if iterable[i] == False:
+def CheckTree(CheckList):
+    for i in range(CheckList):
+        if CheckList[i] == False:
             return element
     return True
 
@@ -61,5 +91,5 @@ if CheckTree(CheckList) == True:
 
 else:
     
-    print "TREE HAS FAILED CHECK DUE TO " + TestName[CheckTree(CheckLists)] + "TEST"
+    print "TREE HAS FAILED CHECK DUE TO " + TestName[CheckTree(CheckList)] + "TEST"
     
