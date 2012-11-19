@@ -20,7 +20,6 @@ import os
 
 from CheckInput import *
 
-print haplotype
 #Create list of levels. Each position is a cumulative count of the number
 #of nodes on the level and the previous levels.
 level = [0]*(haplolength+1)
@@ -118,12 +117,13 @@ H=G.to_undirected()
                     
 #Set vizualization layout
 prog='dot'
-pos=nx.drawing.graphviz_layout(H, prog)
+pos=nx.drawing.graphviz_layout(G, prog)
 
 #Mark edges with labels corresponding to the weight of the edge
 edge_labels=dict([((u,v,),d['weight']) for u,v,d in H.edges(data=True)])
 
-#Draw edge labels
+#Draw edge labelsquit()
+
 nx.draw_networkx_edge_labels(G,pos,edge_labels=edge_labels)
 
 #Create edge_colours list and iterate through edges of graph H
@@ -142,10 +142,23 @@ nx.draw(H, pos, node_size=100, node_color='w', edge_color=edge_colours, width=4,
 
 #os.remove('plot.png')
 
-
+#plt.show()
 #Show plot in window
-plt.savefig("plot.png")
+#plt.savefig("plot.png")
+
+print "level" + str(level)
+
+print "dfs_edges"
+for i in nx.dfs_edges(G):
+    print i
 
 
-print 
+
+
+print "nx.bfs_edges(G, 1)"
+for i in nx.bfs_edges(G, 1):
+    print i
+
+hapnum = len(list(set(haplotype)))
+print hapnum
 
