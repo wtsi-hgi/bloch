@@ -16,7 +16,6 @@ import sys
 import matplotlib.pyplot as plt
 import pygraphviz as pgv
 import operator
-import operator
 import os
 from networkx.utils import is_string_like
 
@@ -37,8 +36,8 @@ def remove_node_from_nlevel(m):
 def merge_inner(a,b):
 	
     #List of edges directed out of nodes a and b.
-    a_edges = A.out_edges(a, data=True)
-    b_edges = A.out_edges(b, data=True)
+    a_edges = M.out_edges(a, data=True)
+    b_edges = M.out_edges(b, data=True)
 
     #Iterate through outgoing edges of node a
     for i in a_edges:
@@ -57,14 +56,14 @@ def merge_inner(a,b):
             j = y
 	    
             #Weight of edge in subtree of b is added to corresponding edge of a
-            A.edge[i[0]][i[1]][0]['weight'] = A.edge[i[0]][i[1]][0]['weight'] + A.edge[j[0]][j[1]][0]['weight']
+            M.edge[i[0]][i[1]][0]['weight'] = M.edge[i[0]][i[1]][0]['weight'] + M.edge[j[0]][j[1]][0]['weight']
             
             #Recurse using child node
             merge_inner(i[1],j[1])
 
             #Remove edge and leaf node that is added to subgraph of a.
-            A.remove_edge(y[0],y[1])
-            A.remove_node(y[1])
+            M.remove_edge(y[0],y[1])
+            M.remove_node(y[1])
             l=whichlevel(y[1])
             remove_node_from_nlevel(l) 
 
@@ -72,8 +71,8 @@ def merge_inner(a,b):
     for k in b_edges:
 
 	#Missing edges added to subgraph of a and remove the missing edge from graph
-        A.add_weighted_edges_from([(a, k[1], k[2]['weight'])], allele = k[2]['allele'])
-        A.remove_edge(k[0],k[1])
+        M.add_weighted_edges_from([(a, k[1], k[2]['weight'])], allele = k[2]['allele'])
+        M.remove_edge(k[0],k[1])
    
     
 def mergenodes(a, b):
@@ -81,33 +80,34 @@ def mergenodes(a, b):
     merge_inner(a,b)
 
     #List of edges going into a
-    b_in = A.in_edges(b, data=True)
+    b_in = M.in_edges(b, data=True)
 
     #Move all incoming edges of b in a.
     for i in b_in:
-        A.add_weighted_edges_from([(i[0], a, i[2]['weight'])], allele = i[2]['allele'])
-        A.remove_edge(i[0],i[1])
+        M.add_weighted_edges_from([(i[0], a, i[2]['weight'])], allele = i[2]['allele'])
+        M.remove_edge(i[0],i[1])
 
     #Remove node b	
-    A.remove_node(b)
+    M.remove_node(b)
     l=whichlevel(b)
     remove_node_from_nlevel(l)
                
     #Relabel node names which are above the level of the node being added.
-    mapping=dict(zip(A.nodes(),range(1,nlevel[haplolength]+1)))
-    nx.relabel_nodes(A,mapping,copy=False)
+    mapping=dict(zip(M.nodes(),range(1,nlevel[haplolength]+1)))
+    nx.relabel_nodes(M,mapping,copy=False)
 
-        
+      
 #Set mlevel to equal level
 mlevel = list(level)
 nlevel = list(mlevel)
+
 
 #Create copy of G into multidirected graph
 M = nx.MultiDiGraph()
 M.add_nodes_from(G)
 M.add_edges_from(G.edges_iter(data=True))
- 
 
+ 
 #Iterate through levels of M starting at second level.
 for i in range(1, haplolength+1):
 
@@ -129,7 +129,5 @@ for i in range(1, haplolength+1):
 
     #If there is more than one node in level, test each pair of nodes in each level and merge 
     else:
-     
-        
-        
-        
+
+
