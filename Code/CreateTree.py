@@ -22,7 +22,7 @@ from CheckInput import *
 
 #Create list of levels. Each position is a cumulative count of the number
 #of nodes on the level and the previous levels.
-level = [0]*(haplolength+1)
+level = [0]*(haplolength+1)                                                                                               
 
 #Set current node pointer
 cnode = 0
@@ -30,11 +30,14 @@ cnode = 0
 #Create empty directed graph
 G = nx.DiGraph()
 
-#Function to add node to level count. l=level
+#Function to add node to level count. m=level
 def add_node_to_level(m):
     
     for a in range(m,(haplolength+1)):
-        level[a] = level[a] + 1      
+        
+        level[a] = level[a] + 1
+
+    
         
 #Function to add node to current node c=cnode, h=haplotype, l=level
 def add_edge_from_cnode(G,c,h,l):
@@ -144,21 +147,5 @@ nx.draw(H, pos, node_size=100, node_color='w', edge_color=edge_colours, width=4,
 
 #plt.show()
 #Show plot in window
-#plt.savefig("plot.png")
-
-print "level" + str(level)
-
-print "dfs_edges"
-for i in nx.dfs_edges(G):
-    print i
-
-
-
-
-print "nx.bfs_edges(G, 1)"
-for i in nx.bfs_edges(G, 1):
-    print i
-
-hapnum = len(list(set(haplotype)))
-print hapnum
+plt.savefig("plot.png")
 

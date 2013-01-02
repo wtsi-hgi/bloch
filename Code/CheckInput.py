@@ -25,7 +25,7 @@ haplotype = []
 frequency = []
 
 #Open data file in read mode
-with open('/Users/mp18/Documents/bloch/Data/Table_1', 'r') as f:
+with open('/Users/mp18/Documents/bloch/Data/Table_3', 'r') as f:
     data = f.read()
     
 #Close file
