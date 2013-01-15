@@ -36,21 +36,21 @@ def remove_node_from_nlevel(m):
 def merge_inner(a,b):
 	
     #List of edges directed out of nodes a and b.
-    a_edges = M.out_edges(a, data=True)
-    b_edges = M.out_edges(b, data=True)
+    a_out = M.out_edges(a, data=True)
+    b_out = M.out_edges(b, data=True)
 
     #Iterate through outgoing edges of node a
-    for i in a_edges:
+    for i in a_out:
         x = i[2]['allele']
         y = None
 	#If outgoing edge of a has same allele as outgoing edge of b the index is set to y.
-        for iterator in b_edges:
+        for iterator in b_out:
             if iterator[2]['allele'] == x:
                 y = iterator
 
 	#If y exists, it is removed from list of outgoing edges from b
         if y is not None:
-            b_edges.remove(y)         
+            b_out.remove(y)         
                        
             #get edge from b corresponding to i
             j = y
@@ -67,8 +67,8 @@ def merge_inner(a,b):
             l=whichlevel(y[1])
             remove_node_from_nlevel(l) 
 
-    #All outgoing edges of b which match one from a have been removing leaving only missing edges in list b_edges
-    for k in b_edges:
+    #All outgoing edges of b which match one from a have been removing leaving only missing edges in list b_out
+    for k in b_out:
 
 	#Missing edges added to subgraph of a and remove the missing edge from graph
         M.add_weighted_edges_from([(a, k[1], k[2]['weight'])], allele = k[2]['allele'])
