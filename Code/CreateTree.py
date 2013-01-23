@@ -116,36 +116,37 @@ for i in range(haplonum):
                 cnode = snode
 
 #Create undirected graph from directed graph for visualization purposes           
-H=G.to_undirected()        
+#H=G.to_undirected()        
                     
 #Set vizualization layout
-prog='dot'
-pos=nx.drawing.graphviz_layout(G, prog)
+#prog='dot'
+#pos=nx.drawing.graphviz_layout(G, prog)
 
 #Mark edges with labels corresponding to the weight of the edge
-edge_labels=dict([((u,v,),d['weight']) for u,v,d in H.edges(data=True)])
+#edge_labels=dict([((u,v,),d['weight']) for u,v,d in H.edges(data=True)])
 
 #Draw edge labelsquit()
 
-nx.draw_networkx_edge_labels(G,pos,edge_labels=edge_labels)
+#nx.draw_networkx_edge_labels(G,pos,edge_labels=edge_labels)
 
 #Create edge_colours list and iterate through edges of graph H
-edge_colours=[]
-for u,v,d in H.edges(data=True):
+#edge_colours=[]
+#for u,v,d in H.edges(data=True):
     #If allele is labelled 1 append colour MidnightBlue
-    if d['allele'] == '1':
-        edge_colours.append('MidnightBlue')
+    #    if d['allele'] == '1':
+    #        edge_colours.append('MidnightBlue')
         #Otherwise append the colour LightBlue
-    else:
-        edge_colours.append('LightBlue')
+        #    else:
+        #        edge_colours.append('LightBlue')
 
 #Draw the graph using edge_colours calculated previously
-nx.draw(H, pos, node_size=100, node_color='w', edge_color=edge_colours, width=4, with_labels=False)
+#nx.draw(H, pos, node_size=100, node_color='w', edge_color=edge_colours, width=4, with_labels=False)
 
 
 #os.remove('plot.png')
 
 #plt.show()
 #Show plot in window
-plt.savefig("plot.png")
+#plt.savefig("plot.png")
+
 

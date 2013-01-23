@@ -14,12 +14,137 @@
 import networkx as nx
 import sys
 import matplotlib.pyplot as plt
+import pylab as pyl
 import pygraphviz as pgv
 import operator
 import os
+import math
 from networkx.utils import is_string_like
 
 from CreateTree import *
+
+def plot_tree(G, name='plot.png'):
+      
+    #Create undirected graph from directed graph for visualization purposes           
+    N=G.to_undirected()
+    pyl.rcParams['figure.figsize'] = 10, 10
+    
+    #Clear plot to begin again
+    plt.clf()
+    plt.axis('off')
+        
+    #Set vizualization layout
+    prog ='dot'
+    pos = nx.drawing.graphviz_layout(G, prog)
+    
+    #Mark edges with labels corresponding to the weight of the edge
+    edge_labels=dict([((u,v,),d['weight']) for u,v,d in N.edges(data=True)])
+   
+    #Draw out nodes
+    nx.draw_networkx_nodes(G,pos,node_size=400, node_color='w')
+    #Draw edge labels
+    nx.draw_networkx_edge_labels(G,pos,ax=None,edge_labels=edge_labels)
+    
+    #Create two edges lists for the different alleles
+    allele_1 = [(u,v) for (u,v,d) in N.edges(data=True) if d['allele'] == 1]
+    allele_2 = [(u,v) for (u,v,d) in N.edges(data=True) if d['allele'] == 2]
+    #both_alleles = [(u,v) for (u,v,d) in N.edges(data=True) if d['weight'] >0.5]
+    #Draw node labels
+    nx.draw_networkx_labels(G,pos,ax=None)
+
+    #Draw edges from edge lists of different alleles
+    nx.draw_networkx_edges(N, pos, edgelist=allele_1, node_size=100, width=3, with_labels=False,ax=None)
+    nx.draw_networkx_edges(N, pos, edgelist=allele_2, node_size=100, width=6, with_labels=False, style='dashed',ax=None)
+    #nx.draw(N, pos, node_size=100, node_color='w', edge_color=edge_colours, width=4, with_labels=False)
+
+    #os.remove('plot.png')
+    #Show plot in window
+    #plt.show()
+
+    #Save plot
+    plt.savefig(name)
+
+    
+#Finds numerator of transition probability for given node and given allele. Returns 0 if allele is not found.
+def gettransition(n,allele):
+    t = 0
+
+    #Each outgoing edge of the given node is checked to have the corresponding allele.
+    for i in M.out_edges(n, data=True):
+        if i[2]['allele'] == allele:
+            t = i[2]['weight']
+    
+    return t
+
+#Performs node test between a pair of nodes and all alleles which both nodes contain. Returns True or False.
+def similarityscore(p,totala,totalb,threshold):
+        
+    #List of alleles which are on outgoing edges of both nodes being tested.
+    allelelist = list(set(list([i[2]['allele'] for i in M.out_edges(p[0], data=True)]) + list([i[2]['allele'] for i in M.out_edges(p[1], data=True)])))
+
+    #Score is calculated using each allele in list
+    for i in allelelist:
+        score = math.fabs(gettransition(p[0],i)/totala - gettransition(p[1],i)/totalb)
+
+        #Function returns True if score is below the threshold.
+        if score > threshold:
+            return False
+        else:
+            return score
+
+#Function which tests if two nodes are similar enough to merge. Returns True or False.
+def mergetest(a,b):
+
+    #Score threshold and haplotype count for nodes a and b are calculated.
+    totala = math.fsum([i[2]['weight'] for i in M.out_edges(a, data=True)])
+    totalb = math.fsum([i[2]['weight'] for i in M.out_edges(b, data=True)])
+   
+    if totala == 0 and totalb == 0:
+        return False
+    
+    threshold = math.sqrt(math.pow(totala, -1) + math.pow(totalb, -1))
+    maxscore = 0
+
+    #Queue list is created for breadth-first search.
+    q = [[a,b]]
+
+    #Similarity score is calculated for the first item of the queue as long as there are elements in the queue.
+    while len(q) != 0:
+
+        score = similarityscore(q[0],totala,totalb,threshold)
+        
+        #If a pair of nodes are not similar enough mergetest returns False immediately.
+        if score is False:
+            return False
+
+        else:
+            if score > maxscore:
+                maxscore = score
+            
+            #Each allele of outgoing edges of first node is compared to alleles from outgoing edges of second node.
+            for i in M.out_edges(q[0][0], data=True):
+                x = i[2]['allele']
+                y = None
+
+                for j in M.out_edges(q[0][1], data=True):
+                    
+                    #If matching allele is found in outgoing edges of second node then for loop stops.
+                    if j[2]['allele'] == x:
+                        y = j
+                        break
+                                                
+                    else:
+                        continue
+                    
+                #Corresponding pairs of nodes iwth matching alleles are added to the queue.
+                if y is not None:
+                    q.append([i[1],y[1]])
+
+            #Completed pair of nodes is removed from list          
+            q.pop(0)
+            
+    #If all possible pairs are compared and are True, function returns True.
+    return maxscore
 
 #Function which returns the level of the given node
 def whichlevel(n):    
@@ -43,6 +168,7 @@ def merge_inner(a,b):
     for i in a_out:
         x = i[2]['allele']
         y = None
+        
 	#If outgoing edge of a has same allele as outgoing edge of b the index is set to y.
         for iterator in b_out:
             if iterator[2]['allele'] == x:
@@ -106,28 +232,60 @@ nlevel = list(mlevel)
 M = nx.MultiDiGraph()
 M.add_nodes_from(G)
 M.add_edges_from(G.edges_iter(data=True))
+plot_tree(M, name='before_merge.png')
 
  
 #Iterate through levels of M starting at second level.
 for i in range(1, haplolength+1):
-
+  
     nn = mlevel[i] - mlevel[i-1]
+    levelmin = 1000
+    minj = 0
+    mink = 0
     
     #If there is only 1 node in graph G level i then carry on to next level. 
     if nn == 1:
-      continue
+        print 'option1'
+        continue
 
     #If there is only 2 nodes in level. Test similarity between the pair of nodes.
     elif nn == 2:
-
+              
         if mergetest(mlevel[i],mlevel[i]-1) == False:
             continue
         
         else:
-            mergenodes(mlevel[i],mlevel[i-1])       
+            mergenodes(mlevel[i],mlevel[i]-1)
+            mlevel = nlevel
             
 
-    #If there is more than one node in level, test each pair of nodes in each level and merge 
+    #If there is more than one node in level, test each pair of nodes in each level and merge the lowest scoring
+    #Could make this more efficient by storing scores between nodes for each level so that after first node, merges are not repeated. ie. test between 2 nodes that you know is false.
     else:
+        print 'option 3'
+        merge = True
+        while merge == True:
+            merge = False
 
+            #Calculate merge score for each pair of nodes
+            for j in range(mlevel[i-1]+1, mlevel[i]+1):
+                for k in range(mlevel[i-1]+1, mlevel[i]+1):
+                    
+                    
+                    if j != k:
+                        testscore = mergetest(j,k)
+                        if testscore == False:
+                            continue
+                        else:
+                            if testscore < levelmin:
+                                levelmin = testscore
+                                minj = j
+                                mink = k
+                if levelmin != 1000:
+                    mergenodes(minj,mink)
+                    mlevel = nlevel
+                    merge = True           
+
+        
+plot_tree(M, name='after_merge.png')
 
