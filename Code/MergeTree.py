@@ -40,22 +40,37 @@ def plot_tree(G, name='plot.png'):
     #Mark edges with labels corresponding to the weight of the edge
     edge_labels=dict([((u,v,),d['weight']) for u,v,d in N.edges(data=True)])
    
-    #Draw out nodes
-    nx.draw_networkx_nodes(G,pos,node_size=400, node_color='w')
-    #Draw edge labels
-    nx.draw_networkx_edge_labels(G,pos,ax=None,edge_labels=edge_labels)
+    
     
     #Create two edges lists for the different alleles
-    allele_1 = [(u,v) for (u,v,d) in N.edges(data=True) if d['allele'] == 1]
-    allele_2 = [(u,v) for (u,v,d) in N.edges(data=True) if d['allele'] == 2]
+    allele_1 = [(u,v) for (u,v,d) in N.edges(data=True) if d['allele'] == '1']
+    allele_2 = [(u,v) for (u,v,d) in N.edges(data=True) if d['allele'] == '2']
     #both_alleles = [(u,v) for (u,v,d) in N.edges(data=True) if d['weight'] >0.5]
-    #Draw node labels
-    nx.draw_networkx_labels(G,pos,ax=None)
 
+    
+    nodesize=[]
+    for i in G.nodes():
+        totalin = math.fsum([j[2]['weight'] for j in M.in_edges(i, data=True)])
+        totalout = math.fsum([j[2]['weight'] for j in M.out_edges(i, data=True)])
+        if totalin == totalout:
+            nodesize.append(math.fabs(totalin))        
+        else:
+            nodesize.append(math.fabs(totalin-totalout))
+
+            
+
+    #Draw out nodes
+    nx.draw_networkx_nodes(G,pos,node_size=nodesize, node_color='k')
     #Draw edges from edge lists of different alleles
-    nx.draw_networkx_edges(N, pos, edgelist=allele_1, node_size=100, width=3, with_labels=False,ax=None)
-    nx.draw_networkx_edges(N, pos, edgelist=allele_2, node_size=100, width=6, with_labels=False, style='dashed',ax=None)
+    nx.draw_networkx_edges(N, pos, edgelist=allele_1, node_size=100, width=3, splines=True)
+    nx.draw_networkx_edges(N, pos, edgelist=allele_2, node_size=100, width=6, style='dotted', splines=True)
     #nx.draw(N, pos, node_size=100, node_color='w', edge_color=edge_colours, width=4, with_labels=False)
+    #Draw edge labels
+    nx.draw_networkx_edge_labels(G,pos,ax=None,edge_labels=edge_labels)
+    #Draw node labels
+    #nx.draw_networkx_labels(G,pos,ax=None)
+
+    
 
     #os.remove('plot.png')
     #Show plot in window
@@ -208,7 +223,7 @@ def mergenodes(a, b):
     #List of edges going into a
     b_in = M.in_edges(b, data=True)
 
-    #Move all incoming edges of b in a.
+    #Move all incoming edges of b in a. IMPROVEMENT = CAN REPLACE EDGE RATHER THAN ADD THEN DELETE
     for i in b_in:
         M.add_weighted_edges_from([(i[0], a, i[2]['weight'])], allele = i[2]['allele'])
         M.remove_edge(i[0],i[1])
@@ -239,9 +254,7 @@ plot_tree(M, name='before_merge.png')
 for i in range(1, haplolength+1):
   
     nn = mlevel[i] - mlevel[i-1]
-    levelmin = 1000
-    minj = 0
-    mink = 0
+    
     
     #If there is only 1 node in graph G level i then carry on to next level. 
     if nn == 1:
@@ -250,6 +263,7 @@ for i in range(1, haplolength+1):
 
     #If there is only 2 nodes in level. Test similarity between the pair of nodes.
     elif nn == 2:
+
               
         if mergetest(mlevel[i],mlevel[i]-1) == False:
             continue
@@ -262,18 +276,23 @@ for i in range(1, haplolength+1):
     #If there is more than one node in level, test each pair of nodes in each level and merge the lowest scoring
     #Could make this more efficient by storing scores between nodes for each level so that after first node, merges are not repeated. ie. test between 2 nodes that you know is false.
     else:
-        print 'option 3'
+
         merge = True
         while merge == True:
             merge = False
+            levelmin = 1000
+            minj = 0
+            mink = 0
 
             #Calculate merge score for each pair of nodes
             for j in range(mlevel[i-1]+1, mlevel[i]+1):
-                for k in range(mlevel[i-1]+1, mlevel[i]+1):
+                for k in range(j, mlevel[i]+1):
                     
                     
                     if j != k:
                         testscore = mergetest(j,k)
+                        
+                       
                         if testscore == False:
                             continue
                         else:
@@ -281,10 +300,33 @@ for i in range(1, haplolength+1):
                                 levelmin = testscore
                                 minj = j
                                 mink = k
-                if levelmin != 1000:
-                    mergenodes(minj,mink)
-                    mlevel = nlevel
-                    merge = True           
+                                            
+            if levelmin != 1000:
+                mergenodes(minj,mink)
+                mlevel = nlevel
+                merge = True
+
+
+#Merge all nodes in final level
+#Iterate through all outgoing edges of all the nodes on penultimate level
+#Move edges to go to the first node of the final level
+#Delete all other nodes after the first node of the final level.
+
+
+
+endnode = mlevel[haplolength-1] + 1
+for i in range(mlevel[haplolength-2]+1,mlevel[haplolength-1]+1):
+    for j in M.out_edges(i, data=True):
+        if j[1] != endnode:
+            M.add_weighted_edges_from([(j[0], endnode, j[2]['weight'])], allele = j[2]['allele'])
+            M.remove_edge(j[0],j[1])
+
+for i in range(mlevel[haplolength-1]+2, mlevel[haplolength]+1):
+    M.remove_node(i)
+    mlevel[haplolength]=endnode
+
+            
+
 
         
 plot_tree(M, name='after_merge.png')
