@@ -75,5 +75,5 @@ for i in range(haplonum):
         print ("Error: Haplotype number " + str(i) + " is not the same length") 
         break
 
-for i in range(4):
-    print [line[i:i+1] for line in open('/Users/mp18/Documents/bloch/Data/Table_1', 'r')]
+
+    
