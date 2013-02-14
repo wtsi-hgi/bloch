@@ -19,7 +19,6 @@ import pygraphviz as pgv
 import operator
 import os
 import math
-from networkx.utils import is_string_like
 
 from CreateTree import *
 
@@ -151,7 +150,7 @@ def mergetest(a,b):
                     else:
                         continue
                     
-                #Corresponding pairs of nodes iwth matching alleles are added to the queue.
+                #Corresponding pairs of nodes with matching alleles are added to the queue.
                 if y is not None:
                     q.append([i[1],y[1]])
 
