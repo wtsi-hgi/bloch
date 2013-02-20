@@ -231,6 +231,8 @@ def mergenodes(a, b):
     M.remove_node(b)
     l=whichlevel(b)
     remove_node_from_nlevel(l)
+
+   
                
     #Relabel node names which are above the level of the node being added.
     mapping=dict(zip(M.nodes(),range(1,nlevel[haplolength]+1)))
