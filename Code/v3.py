@@ -100,9 +100,9 @@ def plot_tree(G, name='plot.png'):
                 edge_labels[(i[0],i[1])] = weight  
     
     #Create two edges lists for the different alleles
-    allele_1 = [(u,v) for (u,v,d) in N.edges(data=True) if d['allele'] == '1']
-    allele_2 = [(u,v) for (u,v,d) in N.edges(data=True) if d['allele'] == '2']
-    allele_3 = [(u,v) for (u,v,d) in N.edges(data=True) if d['allele'] == '3']
+    allele_1 = [(u,v) for (u,v,d) in N.edges(data=True) if d['allele'] == 1]
+    allele_2 = [(u,v) for (u,v,d) in N.edges(data=True) if d['allele'] == 2]
+    allele_3 = [(u,v) for (u,v,d) in N.edges(data=True) if d['allele'] == 3]
         
     nodesize=[]
     for i in G.nodes():
@@ -129,13 +129,13 @@ def nodesplit(G,n,l,level):
     #For each haplotype   
     for i in range(len(G.node[n]['haplotype'])):
         #If edge exists, append frequency and haplotype suffix to the lists on next node.
-        if G.node[n]['haplotype'][i][0] in [(edata['allele']) for u,v,edata in G.out_edges(n,data=True) if 'allele' in edata]:
+        if int(G.node[n]['haplotype'][i][0]) in [(edata['allele']) for u,v,edata in G.out_edges(n,data=True) if 'allele' in edata]:
             G.node[v]['haplotype'].append(G.node[n]['haplotype'][i][1:])
             G.node[v]['frequency'].append(G.node[n]['frequency'][i])
 
         #If edge does not exist, add edge.
         else:
-            G.add_edge(n,level[l+1]+1,allele=G.node[n]['haplotype'][i][0])
+            G.add_edge(n,level[l+1]+1,allele=int(G.node[n]['haplotype'][i][0]))
             G.add_node(level[l+1]+1,haplotype=[G.node[n]['haplotype'][i][1:]],frequency=[G.node[n]['frequency'][i]])
 
             for a in range(l+1,(len(G.node[n]['haplotype'][0])+1)+l):
@@ -333,3 +333,4 @@ glevel[haplolength]=endnode
     
 #Plot resulting tree
 plot_tree(G, name='v3.png')
+
