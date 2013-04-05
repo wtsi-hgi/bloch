@@ -107,7 +107,8 @@ for i in G[1].keys():
 
 for i, v in enumerate(G.out_edges(1, keys=True, data=True)):
     for j, w in enumerate(G.out_edges(1, keys=True, data=True)):
-        if emission(GT[0],(v,w)) == 1:        
+        print (v,w)
+        if emission(GT[0],(v[3]['allele'],w[3]['allele'])) == 1:        
             if v == w:
                 a = hapinitial(v[3]['allele'])
                 var = a*a            
@@ -115,20 +116,38 @@ for i, v in enumerate(G.out_edges(1, keys=True, data=True)):
                 var = dipinitial(v[3]['allele'], w[3]['allele'])
             a1[i][j]=var
 
-
 #Induction
 #Iterate through each level
+for i in range(1,ll):
+    print i
 
-#Iterate through nodes in each level
+#Iterate through outgoing edges in each level
+    for a, k in enumerate(G.out_edges(nbunch=[j for j in range(glevel[i-1]+1,glevel[i]+1)], keys=True, data=True)):
+        for b, m in enumerate(G.out_edges(nbunch=[l for l in range(glevel[i-1]+1,glevel[i]+1)], keys=True, data=True)):
+            print (k, m)
 
-#Iterate through outgoing edges on each node
+            #Check if emission probability = 1
+            if emission(GT[i],(k[3]['allele'],m[3]['allele'])) == 1:
+                print True
+                for c, v in enumerate(G.out_edges(i, keys=True, data=True)):
+                    for d, w in enumerate(G.out_edges(i, keys=True, data=True)):
+                        
 
-#Check if emision probability = 1
+
+
+
+
+                print True
+            
+        
 
 #Check if any a1 = 0
 
 #Sum transitions probabilities*non-zero a1
 
 
-
+print a1
+print a2
+print a3
+print a4
 
