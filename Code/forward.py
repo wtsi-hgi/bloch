@@ -18,6 +18,7 @@ import operator
 import os
 import math
 import numpy
+import itertools
 
 from v3 import G, glevel
 
@@ -104,46 +105,42 @@ for i in G[1].keys():
     for j in G[1][i].keys():
         print G[1][i][j]
 
-
-for i, v in enumerate(G.out_edges(1, keys=True, data=True)):
-    for j, w in enumerate(G.out_edges(1, keys=True, data=True)):
-        print (v,w)
-        if emission(GT[0],(v[3]['allele'],w[3]['allele'])) == 1:        
-            if v == w:
-                a = hapinitial(v[3]['allele'])
-                var = a*a            
-            else:
-                var = dipinitial(v[3]['allele'], w[3]['allele'])
-            a1[i][j]=var
+for a, b  in itertools.product([(i, j) for i, j in enumerate(G.out_edges(1, keys=True, data=True))], repeat=2):
+    print (a[1],b[1])
+    if emission(GT[0],(a[1][3]['allele'],b[1][3]['allele'])) == 1:        
+        if a[1] == b[1]:
+            t = hapinitial(v[3]['allele'])
+            var = t*t            
+        else:
+            var = dipinitial(a[1][3]['allele'], b[1][3]['allele'])
+        a1[a[0]][b[0]]=var
 
 #Induction
 #Iterate through each level
 for i in range(1,ll):
-    print i
 
 #Iterate through outgoing edges in each level
-    for a, k in enumerate(G.out_edges(nbunch=[j for j in range(glevel[i-1]+1,glevel[i]+1)], keys=True, data=True)):
-        for b, m in enumerate(G.out_edges(nbunch=[l for l in range(glevel[i-1]+1,glevel[i]+1)], keys=True, data=True)):
-            print (k, m)
+    for a, b in itertools.product([(c, d) for c, d in enumerate(G.out_edges(nbunch=[j for j in range(glevel[i-1]+1,glevel[i]+1)], keys=True, data=True))], repeat=2):
+        print "Edge pairs on level " + str(i)
+        print (a[1], b[1])
 
-            #Check if emission probability = 1
-            if emission(GT[i],(k[3]['allele'],m[3]['allele'])) == 1:
-                print True
-                for c, v in enumerate(G.out_edges(i, keys=True, data=True)):
-                    for d, w in enumerate(G.out_edges(i, keys=True, data=True)):
-                        
-
-
-
-
-
-                print True
+        #Check if emission probability = 1
+        if emission(GT[i],(a[1][3]['allele'],b[1][3]['allele'])) == 1:
+            print True
+            
+            for c, d  in itertools.product([(e, f) for e, f in enumerate(G.out_edges(i, keys=True, data=True))], repeat=2):
+                print (c[1], d[1])
+                
+                        #if globals()['a'+str(i)][ ][ ] != 0:
             
         
 
 #Check if any a1 = 0
 
 #Sum transitions probabilities*non-zero a1
+print 'itertools'
+for a, b  in itertools.product([(i, j) for i, j in enumerate(G.out_edges(1, keys=True, data=True))], repeat=2):
+    print a, b
 
 
 print a1
