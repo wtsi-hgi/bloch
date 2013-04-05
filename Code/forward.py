@@ -19,7 +19,6 @@ import os
 import math
 import numpy
 
-
 from v3 import G, glevel
 
 print "Nodes"
@@ -27,7 +26,7 @@ for i in G.nodes(data=True):
     print i
     
 print "Edges"
-for i in G.edges(data=True):
+for i in G.edges(keys=True, data=True):
     print i
 
 print "Adjacency List"
@@ -78,7 +77,7 @@ def emission(gt,s):
                     return 1
                 else:
                     return 0        
-    elif gt.count('?') == 2:
+    elif gt.count('?') == 2:        
         return 1    
     else:
         if set(gt) == set(s):
@@ -87,34 +86,49 @@ def emission(gt,s):
             return 0
 
 #Transition state probabilities
+def haptrans(e,d):
+    if e[0] == d[1]: #parent node of edge e is child node of edge d
+        if 'weight' in e[3]:
+            x = e[3]['weight']
+        else:
+            x = sum(G.node[e[1]]['frequency'])            
+        return x/sum(G.node[e[0]]['frequency']) 
+    else:
+        return 0
 
-#Scan matrix a1 and sum calculation for places which are non-zero
-
-
-
-#Multiply by emission probability
-
-
+def diptrans(a,b):
+    return haptrans(a)*haptrans(b)
 
 #Initiation
 for i in G[1].keys():
     for j in G[1][i].keys():
         print G[1][i][j]
 
+
 for i, v in enumerate(G.out_edges(1, keys=True, data=True)):
     for j, w in enumerate(G.out_edges(1, keys=True, data=True)):
-        if v == w:
-            a = hapinitial(v[3]['allele'])
-            var = a*a            
-        else:
-            var = dipinitial(v[3]['allele'], w[3]['allele'])
-        a1[i][j]=var
+        if emission(GT[0],(v,w)) == 1:        
+            if v == w:
+                a = hapinitial(v[3]['allele'])
+                var = a*a            
+            else:
+                var = dipinitial(v[3]['allele'], w[3]['allele'])
+            a1[i][j]=var
 
-print a1
-print a2
-print a3
-print a4
 
 #Induction
+#Iterate through each level
+
+#Iterate through nodes in each level
+
+#Iterate through outgoing edges on each node
+
+#Check if emision probability = 1
+
+#Check if any a1 = 0
+
+#Sum transitions probabilities*non-zero a1
+
+
 
 
