@@ -121,31 +121,18 @@ for i in range(1,ll):
 
 #Iterate through ordered pairs of outgoing edges in each level
     for a, b in itertools.product([(c, d) for c, d in enumerate(G.out_edges(nbunch=[j for j in range(glevel[i-1]+1,glevel[i]+1)], keys=True, data=True))], repeat=2):
-        print "Edge pairs on level " + str(i)
-        print (a[1], b[1])
-
+        
         #Check if emission probability = 1
         if emission(GT[i],(a[1][3]['allele'],b[1][3]['allele'])) == 1:
-            print "Emission probability = 1"
-
+            
             if i == 1:
                 nodes = 1
             else:
                 nodes = [j for j in range(glevel[i-2]+1,glevel[i-1]+1)]
 
-
             var = sum([(globals()['a'+str(i)][c[0]][d[0]]*diptrans((a[1],c[1]), (b[1],d[1]))) for c, d  in itertools.product([(e, f) for e, f in enumerate(G.out_edges(nbunch=nodes, keys=True, data=True))], repeat=2)])
-            print var
 
             globals()['a'+str(i+1)][a[0]][b[0]] = var
-
-            #Iterate through previous level's induction calculation
-            #for c, d  in itertools.product([(e, f) for e, f in enumerate(G.out_edges(nbunch=nodes, keys=True, data=True))], repeat=2):
-                
-            #print (c[1], d[1])
-            #print diptrans((a[1],c[1]), (b[1],d[1]))
-                
-
 
 
 print a1
