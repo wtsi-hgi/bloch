@@ -87,7 +87,7 @@ def emission(gt,s):
             return 0
 
 #Transition state probabilities
-def haptrans(e,d):
+def haptrans((e,d)):
     if e[0] == d[1]: #parent node of edge e is child node of edge d
         if 'weight' in e[3]:
             x = e[3]['weight']
@@ -95,7 +95,7 @@ def haptrans(e,d):
             x = sum(G.node[e[1]]['frequency'])            
         return x/sum(G.node[e[0]]['frequency']) 
     else:
-        return 0
+        return 0.0
 
 def diptrans(a,b):
     return haptrans(a)*haptrans(b)
@@ -109,7 +109,7 @@ for a, b  in itertools.product([(i, j) for i, j in enumerate(G.out_edges(1, keys
     print (a[1],b[1])
     if emission(GT[0],(a[1][3]['allele'],b[1][3]['allele'])) == 1:        
         if a[1] == b[1]:
-            t = hapinitial(v[3]['allele'])
+            t = hapinitial(a[1][3]['allele'])
             var = t*t            
         else:
             var = dipinitial(a[1][3]['allele'], b[1][3]['allele'])
@@ -119,28 +119,33 @@ for a, b  in itertools.product([(i, j) for i, j in enumerate(G.out_edges(1, keys
 #Iterate through each level
 for i in range(1,ll):
 
-#Iterate through outgoing edges in each level
+#Iterate through ordered pairs of outgoing edges in each level
     for a, b in itertools.product([(c, d) for c, d in enumerate(G.out_edges(nbunch=[j for j in range(glevel[i-1]+1,glevel[i]+1)], keys=True, data=True))], repeat=2):
         print "Edge pairs on level " + str(i)
         print (a[1], b[1])
 
         #Check if emission probability = 1
         if emission(GT[i],(a[1][3]['allele'],b[1][3]['allele'])) == 1:
-            print True
-            
-            for c, d  in itertools.product([(e, f) for e, f in enumerate(G.out_edges(i, keys=True, data=True))], repeat=2):
-                print (c[1], d[1])
+            print "Emission probability = 1"
+
+            if i == 1:
+                nodes = 1
+            else:
+                nodes = [j for j in range(glevel[i-2]+1,glevel[i-1]+1)]
+
+
+            var = sum([(globals()['a'+str(i)][c[0]][d[0]]*diptrans((a[1],c[1]), (b[1],d[1]))) for c, d  in itertools.product([(e, f) for e, f in enumerate(G.out_edges(nbunch=nodes, keys=True, data=True))], repeat=2)])
+            print var
+
+            globals()['a'+str(i+1)][a[0]][b[0]] = var
+
+            #Iterate through previous level's induction calculation
+            #for c, d  in itertools.product([(e, f) for e, f in enumerate(G.out_edges(nbunch=nodes, keys=True, data=True))], repeat=2):
                 
-                        #if globals()['a'+str(i)][ ][ ] != 0:
-            
-        
+            #print (c[1], d[1])
+            #print diptrans((a[1],c[1]), (b[1],d[1]))
+                
 
-#Check if any a1 = 0
-
-#Sum transitions probabilities*non-zero a1
-print 'itertools'
-for a, b  in itertools.product([(i, j) for i, j in enumerate(G.out_edges(1, keys=True, data=True))], repeat=2):
-    print a, b
 
 
 print a1
