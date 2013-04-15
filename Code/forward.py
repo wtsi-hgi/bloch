@@ -17,7 +17,7 @@ import sys
 import operator
 import os
 import math
-import numpy
+import numpy as np
 import itertools
 
 from v3 import G, glevel
@@ -45,7 +45,7 @@ GT = (('?','?'),(1,1),(1,2),(1,2))
 print "matrices"
 
 n1 = G.out_degree(1)
-a1 = numpy.zeros(shape=(n1,n1))
+a1 = np.zeros(shape=(n1,n1))
 
 #Create matrices for storing forward probabilities
 for i in range(ll-1):
@@ -57,7 +57,7 @@ for i in range(ll-1):
     for j in range(glevel[i]+2, glevel[i+1]+1):
         globals()['n'+str(i+2)] += G.out_degree(j)
 
-    globals()['a'+str(i+2)] = numpy.zeros(shape=(globals()['n'+str(i+2)],globals()['n'+str(i+2)]))
+    globals()['a'+str(i+2)] = np.zeros(shape=(globals()['n'+str(i+2)],globals()['n'+str(i+2)]))
 
 #Initial state probabilities
 def hapinitial(allele):
@@ -139,4 +139,5 @@ print a1
 print a2
 print a3
 print a4
+
 
