@@ -22,64 +22,56 @@ import itertools
 
 from forward import *
 
-print "Nodes"
-for i in G.nodes(data=True):
-    print i
+#Function to find edge corresponding to matrix coordinate. t=tuple. l=level(index of m)
+def findedge(t,l):
     
-print "Edges"
-for i in G.edges(keys=True, data=True):
-    print i
 
-print "Adjacency List"
-for i in G.adjacency_iter():
-    print i
 
-print G[6].keys()
-
-print "glevel"
-print glevel
-  
-
-print dir()
+    
 
 for i in range(ll):
     print m[i]
 
-
-print m[0].shape[0]
-
-print m[0].flatten()
-
+#Initial probability
 inprob = []
 
 for i in m[3].flat:
-    prob.append(i/a4.sum())
+    inprob.append(i/m[ll-1].sum())
 
-print inprob
+#Sample list
+s = [0]*ll
+p = [0]*ll
 
-#print numpy.version.version
-#print np.random.choice(n4*n4, p=inprob)
 
-s = [3]
+#Randomly choose first element in m[3] according to initial probabilities
+s[ll-1] = np.random.choice(m[ll-1].size, p=inprob)
+p[ll-1] = inprob[s[ll-1]]
 
-print np.unravel_index(choice, (n4,n4))
+print s[ll-1], p[ll-1]
 
+#Iterate in reverse order
 for i in range(ll-1, 0, -1):
     print 'i'
     print i
-    prob = []
     
-    for j in globals()['a'+str(i)].flat:
+    prob = []
+    idx = np.unravel_index(s[i], (n[i],n[i]))
+    print idx
 
-        prob.append(emission(GT[i-1],allele)*haptrans(e,d)*j/globals()['a'+str(i+1)].flat[globals()['s'+str(i+1)]])
+    #Need to calculate edges corresponding to idx so we know edge data that these tuples correspond to. function?
+
+
+    
+    
+    for j in m[i-1].flat:
+        print j
+        print emission(GT[i],( , ))
+        print haptrans()
+        #prob.append((emission(GT[i], )*haptrans()*j) / m[i].flat[s[i]])
     
     print prob
 
-    #print np.random.choice(globals()['a'+str(i)].size, p=inprob)
+    #print np.random.choice(globals()['a'+str(i)].size, p=prob)
 
+print s
 
-#Collapse matrices into 1D array numpy.flatten function put.
-
-#Initiation: Choose elements
-
-#numpy.random.choice

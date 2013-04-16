@@ -32,7 +32,7 @@ GT = (('?','?'),(1,1),(1,2),(1,2))
 n = [G.out_degree(1)]
 
 #m is the list of matrices of forward probabilities at each level
-m = [np.zeros(shape=(n1,n1))]
+m = [np.zeros(shape=(n[0],n[0]))]
 
 #Append matrices to list m
 for i in range(ll-1):
