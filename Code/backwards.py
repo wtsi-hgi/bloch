@@ -42,6 +42,9 @@ print glevel
 
 print dir()
 
+for i in range(ll):
+    print m[i]
+
 
 print m[0].shape[0]
 
