@@ -22,21 +22,34 @@ import itertools
 
 from forward import *
 
+print "Nodes"
+for i in G.nodes(data=True):
+    print i
+    
+print "Edges"
+for i in G.edges(keys=True, data=True):
+    print i
+
+print "Adjacency List"
+for i in G.adjacency_iter():
+    print i
+
+print G[6].keys()
+
+print "glevel"
+print glevel
   
 
 print dir()
-print a1
-print a2
-print a3
-print a4
 
-print a1.shape[0]
 
-print a1.flatten()
+print m[0].shape[0]
+
+print m[0].flatten()
 
 inprob = []
 
-for i in a4.flat:
+for i in m[3].flat:
     prob.append(i/a4.sum())
 
 print inprob
@@ -44,7 +57,7 @@ print inprob
 #print numpy.version.version
 #print np.random.choice(n4*n4, p=inprob)
 
-s4 = 3
+s = [3]
 
 print np.unravel_index(choice, (n4,n4))
 

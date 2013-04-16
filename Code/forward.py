@@ -22,50 +22,38 @@ import itertools
 
 from v3 import G, glevel
 
-print "Nodes"
-for i in G.nodes(data=True):
-    print i
-    
-print "Edges"
-for i in G.edges(keys=True, data=True):
-    print i
-
-print "Adjacency List"
-for i in G.adjacency_iter():
-    print i
-
-print G[6].keys()
-
-print "glevel"
-print glevel
+#ll is number of levels in the graph
 ll = len(glevel) -1
 
+#Set the genotype
 GT = (('?','?'),(1,1),(1,2),(1,2))
 
-print "matrices"
+#Create n the list of the number of edges in each level
+n = [G.out_degree(1)]
 
-n1 = G.out_degree(1)
-a1 = np.zeros(shape=(n1,n1))
+#m is the list of matrices of forward probabilities at each level
+m = [np.zeros(shape=(n1,n1))]
 
-#Create matrices for storing forward probabilities
+#Append matrices to list m
 for i in range(ll-1):
     
-    #set variable for first one in list
-    globals()['n'+str(i+2)] = G.out_degree(glevel[i]+1)
-    #for loop other variables and add to variable
-    #Count how edges in level
+    #Sum n for each level
+    n.append(G.out_degree(glevel[i]+1))
     for j in range(glevel[i]+2, glevel[i+1]+1):
-        globals()['n'+str(i+2)] += G.out_degree(j)
+        n[i+1] += G.out_degree(j)
 
-    globals()['a'+str(i+2)] = np.zeros(shape=(globals()['n'+str(i+2)],globals()['n'+str(i+2)]))
+    #Append zero-filled matrix to list m
+    m.append(np.zeros(shape=(n[i+1],n[i+1])))
 
-#Initial state probabilities
+#Haploid initial state probabilities
 def hapinitial(allele):
-    for i in G.out_edges(1, data=True):
-        
+    
+    #Edge counts are used. Count of edge/Total count for all edges.
+    for i in G.out_edges(1, data=True):        
         if i[2]['allele'] == allele:
             return sum(G.node[i[1]]['frequency'])/sum(G.node[1]['frequency'])
 
+#Diploid initial state probabilities
 def dipinitial(a,b):    
     return hapinitial(a)*hapinitial(b)
 
@@ -97,6 +85,7 @@ def haptrans((e,d)):
     else:
         return 0.0
 
+#Diploid transition probabilities
 def diptrans(a,b):
     return haptrans(a)*haptrans(b)
 
@@ -135,9 +124,9 @@ for i in range(1,ll):
             globals()['a'+str(i+1)][a[0]][b[0]] = var
 
 
-print a1
-print a2
-print a3
-print a4
+print m[0]
+print m[1]
+print m[2]
+print m[3]
 
 
