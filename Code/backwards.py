@@ -24,10 +24,30 @@ from forward import *
 
 #Function to find edge corresponding to matrix coordinate. t=tuple. l=level(index of m)
 def findedge(t,l):
-    
 
-
+    f = [-1,-1]
+    if l == 0:
+        for a, b in enumerate(G.out_edges(1, keys=True, data=True)):
+            if t[0] == a:
+                f[0] = b
+            if t[1] == a:
+                f[1] = b
+        if -1 in f:
+            print 'Error in findedge'
+                
+        return f
     
+    for a, b in enumerate(G.out_edges(nbunch=[j for j in range(glevel[l-1]+1,glevel[l]+1)], keys=True, data=True)):
+        if t[0] == a:
+            f[0] = b
+        if t[1] == a:
+            f[1] = b
+    if -1 in f:
+        print 'Error in findedge'
+
+    return f
+    
+   
 
 for i in range(ll):
     print m[i]
@@ -47,31 +67,22 @@ p = [0]*ll
 s[ll-1] = np.random.choice(m[ll-1].size, p=inprob)
 p[ll-1] = inprob[s[ll-1]]
 
-print s[ll-1], p[ll-1]
-
-#Iterate in reverse order
+#Iterate through levels in reverse order
 for i in range(ll-1, 0, -1):
-    print 'i'
-    print i
     
     prob = []
     idx = np.unravel_index(s[i], (n[i],n[i]))
-    print idx
 
-    #Need to calculate edges corresponding to idx so we know edge data that these tuples correspond to. function?
+    e = findedge(idx, i)
 
+    for b, j in enumerate(m[i-1].flat):
+        d = findedge(np.unravel_index(b,(n[i-1],n[i-1])), i-1)
 
-    
-    
-    for j in m[i-1].flat:
-        print j
-        print emission(GT[i],( , ))
-        print haptrans()
-        #prob.append((emission(GT[i], )*haptrans()*j) / m[i].flat[s[i]])
-    
-    print prob
+        
+        prob.append((emission(GT[i],(e[0][3]['allele'], e[1][3]['allele'])) * diptrans((e[0],d[0]), (e[1],d[1]))*j) / m[i].flat[s[i]])
 
-    #print np.random.choice(globals()['a'+str(i)].size, p=prob)
+    s[i-1] = np.random.choice(m[i-1].size, p=prob)
 
+print 's'
 print s
 

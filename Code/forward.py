@@ -81,7 +81,7 @@ def emission(gt,s):
             return 0
 
 #Transition state probabilities. e,d: edge tuples incl data
-def haptrans((e,d)):
+def haptrans((e,d)):  
 
     #If parent node of edge e is child node of edge d.
     if e[0] == d[1]:
@@ -129,7 +129,7 @@ for i in range(1,ll):
             else:
                 nodes = [j for j in range(glevel[i-2]+1,glevel[i-1]+1)]
                 
-            var = sum([(m[i-1][c[0]][d[0]]*diptrans((a[1],c[1]), (b[1],d[1]))) for c, d  in itertools.product([(e, f) for e, f in enumerate(G.out_edges(nbunch=nodes, keys=True, data=True))], repeat=2)])
+            var = sum([(m[i-1][c[0]][d[0]]*diptrans([a[1],c[1]], [b[1],d[1]])) for c, d  in itertools.product([(e, f) for e, f in enumerate(G.out_edges(nbunch=nodes, keys=True, data=True))], repeat=2)])
             #Matrix element is set to var calculation formula
             m[i][a[0]][b[0]] = var
 
