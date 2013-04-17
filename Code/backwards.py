@@ -82,7 +82,12 @@ for i in range(ll-1, 0, -1):
         prob.append((emission(GT[i],(e[0][3]['allele'], e[1][3]['allele'])) * diptrans((e[0],d[0]), (e[1],d[1]))*j) / m[i].flat[s[i]])
 
     s[i-1] = np.random.choice(m[i-1].size, p=prob)
+    p[i-1] = prob[s[i-1]]
 
-print 's'
-print s
 
+for i in range(ll):
+    print i
+    print findedge(np.unravel_index(s[i] ,(n[i],n[i])), i)
+
+print 'The pair of paths has sampling probability in either order of'
+print np.product(p)*2
