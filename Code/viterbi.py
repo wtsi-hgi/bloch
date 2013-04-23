@@ -26,13 +26,14 @@ from forward import *
 v = [np.zeros(shape=(n[0],n[0]))]
 
 #arglist is the list of matrices of path to find maximum viterbi probabilities
-arglist = [np.empty((n[0],n[0]),dtype=[('x','i64'),('y','i64')])]
-print arglist[0]
+arglist = [np.zeros((n[0],n[0],2))]
+arglist[0].fill(-1)
 
 #Append matrices to list arglist
 for i in range(ll-1):
     v.append(np.zeros(shape=(n[i+1],n[i+1])))
-    arglist.append(np.empty(shape=(n[i+1],n[i+1]),dtype=[('x','i64'),('y','i64')]))
+    arglist.append(np.zeros((n[i+1],n[i+1],2)))
+    arglist[i+1].fill(-1)
 
 
 #Initiation. Iterate through pairs of outgoing edges from node 1.
@@ -55,7 +56,7 @@ for i in range(1,ll):
     
     #Iterate through ordered pairs of outgoing edges in each level
     for a, b in itertools.product([(c, d) for c, d in enumerate(G.out_edges(nbunch=[j for j in range(glevel[i-1]+1,glevel[i]+1)], keys=True, data=True))], repeat=2):
-        
+
         #If emission probability does not equal 0
         if emission(GT[i],(a[1][3]['allele'],b[1][3]['allele'])) != 0:
             
@@ -65,17 +66,18 @@ for i in range(1,ll):
                 nodes = [j for j in range(glevel[i-2]+1,glevel[i-1]+1)]
 
             max = 0
-           
+            args = [-1., -1.]
             for c, d  in itertools.product([(e, f) for e, f in enumerate(G.out_edges(nbunch=nodes, keys=True, data=True))], repeat=2):
+
                 value = (v[i-1][c[0]][d[0]]*diptrans([a[1],c[1]], [b[1],d[1]]))
                
                 if max < value:
                     max = value
-                    args = (c[0],d[0])
+                    args = [c[0],d[0]]
                     
             #Matrix element is set to var calculation formula
             v[i][a[0]][b[0]] = max
-            #arglist[i][a[0]][b[0]] = args
+            arglist[i][a[0]][b[0]] = args
 
 for i in range(ll):
     print 'level '+str(i)
