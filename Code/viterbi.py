@@ -21,20 +21,20 @@ import numpy as np
 import itertools
 
 from forward import *
+from backwards import findedge
 
-#v is the list of matrices of viterbi probabilities at each level
+#v is the list of matrices of viterbi probabilities at   m each level
 v = [np.zeros(shape=(n[0],n[0]))]
 
 #arglist is the list of matrices of path to find maximum viterbi probabilities
-arglist = [np.zeros((n[0],n[0],2))]
+arglist = [np.zeros((n[0],n[0]))]
 arglist[0].fill(-1)
 
 #Append matrices to list arglist
 for i in range(ll-1):
     v.append(np.zeros(shape=(n[i+1],n[i+1])))
-    arglist.append(np.zeros((n[i+1],n[i+1],2)))
+    arglist.append(np.zeros((n[i+1],n[i+1])))
     arglist[i+1].fill(-1)
-
 
 #Initiation. Iterate through pairs of outgoing edges from node 1.
 for a, b  in itertools.product([(i, j) for i, j in enumerate(G.out_edges(1, keys=True, data=True))], repeat=2):
@@ -66,16 +66,18 @@ for i in range(1,ll):
                 nodes = [j for j in range(glevel[i-2]+1,glevel[i-1]+1)]
 
             max = 0
-            args = [-1., -1.]
+            args = -1
             for c, d  in itertools.product([(e, f) for e, f in enumerate(G.out_edges(nbunch=nodes, keys=True, data=True))], repeat=2):
 
                 value = (v[i-1][c[0]][d[0]]*diptrans([a[1],c[1]], [b[1],d[1]]))
                
                 if max < value:
                     max = value
-                    args = [c[0],d[0]]
                     
-            #Matrix element is set to var calculation formula
+                    args = np.ravel_multi_index((c[0],d[0]), (n[i-1],n[i-1]), mode='raise')
+                    
+                    
+            #Matrix element is set to maximum
             v[i][a[0]][b[0]] = max
             arglist[i][a[0]][b[0]] = args
 
@@ -84,3 +86,22 @@ for i in range(ll):
     print m[i]
     print v[i]
     print arglist[i]
+
+#Backtracking process
+
+value =  v[ll-1].argmax()
+
+phased = []
+
+
+for i in range(ll-1,-1, -1):
+    edge = findedge(value, i)
+
+    phased.insert(0,(edge[0][3]['allele'],(edge[1][3]['allele'])))
+
+
+    value = int(arglist[i].flat[value])
+   
+print GT
+print phased
+    

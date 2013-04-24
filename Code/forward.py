@@ -26,7 +26,7 @@ from v3 import G, glevel
 ll = len(glevel) -1
 
 #Set the genotype
-GT = (('?','?'),(1,1),(1,2),(1,2))
+GT = [('?','?'),(1,1),(1,2),(1,2)]
 
 #Create n the list of the number of edges in each level
 n = [G.out_degree(1)]

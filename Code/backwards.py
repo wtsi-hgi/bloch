@@ -22,30 +22,36 @@ import itertools
 
 from forward import *
 
-#Function to find edge corresponding to matrix coordinate. t=tuple. l=level(index of m)
-def findedge(t,l):
+#Function to find edge corresponding to matrix coordinate. g=flattened index. l=level(index of m)
+def findedge(g,l):
+    t = np.unravel_index(g, (n[l],n[l]))
 
     f = [-1,-1]
     if l == 0:
         for a, b in enumerate(G.out_edges(1, keys=True, data=True)):
+            
             if t[0] == a:
                 f[0] = b
             if t[1] == a:
                 f[1] = b
         if -1 in f:
             print 'Error in findedge'
-                
-        return f
+        else:        
+            return f
+    else:
     
-    for a, b in enumerate(G.out_edges(nbunch=[j for j in range(glevel[l-1]+1,glevel[l]+1)], keys=True, data=True)):
-        if t[0] == a:
-            f[0] = b
-        if t[1] == a:
-            f[1] = b
-    if -1 in f:
-        print 'Error in findedge'
+        for a, b in enumerate(G.out_edges(nbunch=[j for j in range(glevel[l-1]+1,glevel[l]+1)], keys=True, data=True)):
 
-    return f
+            if t[0] == a:
+                f[0] = b
+
+            if t[1] == a:
+                f[1] = b
+
+        if -1 in f:
+            print 'Error in findedge'
+        else:
+            return f
     
    
 
@@ -71,13 +77,12 @@ p[ll-1] = inprob[s[ll-1]]
 for i in range(ll-1, 0, -1):
     
     prob = []
-    idx = np.unravel_index(s[i], (n[i],n[i]))
-
-    e = findedge(idx, i)
-
+    #idx = np.unravel_index(s[i], (n[i],n[i]))
+    e = findedge(s[i], i)
+    
     for b, j in enumerate(m[i-1].flat):
-        d = findedge(np.unravel_index(b,(n[i-1],n[i-1])), i-1)
 
+        d = findedge(b, i-1)
         
         prob.append((emission(GT[i],(e[0][3]['allele'], e[1][3]['allele'])) * diptrans((e[0],d[0]), (e[1],d[1]))*j) / m[i].flat[s[i]])
 
@@ -86,8 +91,7 @@ for i in range(ll-1, 0, -1):
 
 
 for i in range(ll):
-    print i
-    print findedge(np.unravel_index(s[i] ,(n[i],n[i])), i)
+    print findedge(s[i], i)
 
 print 'The pair of paths has sampling probability in either order of'
 print np.product(p)*2
