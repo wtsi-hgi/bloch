@@ -41,13 +41,11 @@ haplolength = len(haplotype[0])
 #Set number of haplotypes to equal haplonum
 haplonum = len(haplotype)
 
-print haplotype
-print frequency
 
-l1 = 'pos1\t'
-l2 = 'pos2\t'
-l3 = 'pos3\t'
-l4 = 'pos4\t'
+l1 = 'pos1'
+l2 = 'pos2'
+l3 = 'pos3'
+l4 = 'pos4'
 
 def allzero(list):
     for i in list:
@@ -63,28 +61,31 @@ while allzero(frequency) == False:
     if frequency[i] == 0:
         next
     else:
+        if s==0:
+            l1 += '\t'
+            l2 += '\t'
+            l3 += '\t'
+            l4 += '\t'
+            s=1
+        elif s==1:
+            l1 += '|'
+            l2 += '|'
+            l3 += '|'
+            l4 += '|'            
+            s=0
+
+        
         l1 += haplotype[i][0]
         l2 += haplotype[i][1]
         l3 += haplotype[i][2]
         l4 += haplotype[i][3]
         frequency[i] -=1
-        if s==0:
-            l1 += '|'
-            l2 += '|'
-            l3 += '|'
-            l4 += '|'
-            s=1
-        elif s==1:
-            l1 += '\t'
-            l2 += '\t'
-            l3 += '\t'
-            l4 += '\t'
-            s=0
+
 
 l1 += '\n'
 l2 += '\n'
 l3 += '\n'
-l4 += '\n' 
+l4 += '\n'
 
 f = open('/Users/mp18/Documents/bloch/Data/Table_1', 'w')
 f.write(l1)
