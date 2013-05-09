@@ -61,7 +61,6 @@ haplolength = len(haplotype[0])
 #Set number of haplotypes to equal haplonum
 haplonum = len(haplotype)
 
-
 #For each haplotype
 for i in range(haplonum):
 
@@ -69,8 +68,6 @@ for i in range(haplonum):
     if haplolength != len(haplotype[i]):
         print ("Error: Haplotype number " + str(i) + " is not the same length") 
         break
-
-
 def plot_tree(G, name='plot.png'):
       
     #Create undirected graph from directed graph for visualization purposes           
@@ -302,8 +299,7 @@ nodesplit(G,1,0,glevel)
 for i in range(1,haplolength):
 
     #Carry out the merge function for each level.
-    merge(i)
-    
+    merge(i)    
 
     #Split each node on each level
     for j in range(glevel[i-1]+1,glevel[i]+1):

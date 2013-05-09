@@ -36,8 +36,8 @@ for i in range(ll-1):
     arglist.append(np.zeros((n[i+1],n[i+1])))
     arglist[i+1].fill(-1)
 
-#Initiation. Iterate through pairs of outgoing edges from node 1.
-for a, b  in itertools.product([(i, j) for i, j in enumerate(G.out_edges(1, keys=True, data=True))], repeat=2):
+#Initiation. Iterate through pairs of outgoing edges from node 1. SAME AS FORWARD ALGORITHM.
+for a, b in itertools.product([(i, j) for i, j in enumerate(G.out_edges(1, keys=True, data=True))], repeat=2):
     
     #If emmsion probability does not equal 0
     if emission(GT[0],(a[1][3]['allele'],b[1][3]['allele'])) != 0:        
@@ -67,17 +67,16 @@ for i in range(1,ll):
 
             max = 0
             args = -1
-            for c, d  in itertools.product([(e, f) for e, f in enumerate(G.out_edges(nbunch=nodes, keys=True, data=True))], repeat=2):
 
+            #Calculate maximum value and record which edges correspond.
+            for c, d  in itertools.product([(e, f) for e, f in enumerate(G.out_edges(nbunch=nodes, keys=True, data=True))], repeat=2):
                 value = (v[i-1][c[0]][d[0]]*diptrans([a[1],c[1]], [b[1],d[1]]))
                
                 if max < value:
-                    max = value
+                    max = value                    
+                    args = np.ravel_multi_index((c[0],d[0]), (n[i-1],n[i-1]), mode='raise')                   
                     
-                    args = np.ravel_multi_index((c[0],d[0]), (n[i-1],n[i-1]), mode='raise')
-                    
-                    
-            #Matrix element is set to maximum
+            #Matrix element is set to maximum and element this comes from is recorded.
             v[i][a[0]][b[0]] = max
             arglist[i][a[0]][b[0]] = args
 
@@ -88,18 +87,14 @@ for i in range(ll):
     print arglist[i]
 
 #Backtracking process
-
 value =  v[ll-1].argmax()
 
 phased = []
 
-
+#Iterate through levels bacwards and create list of phased alleles.
 for i in range(ll-1,-1, -1):
     edge = findedge(value, i)
-
     phased.insert(0,(edge[0][3]['allele'],(edge[1][3]['allele'])))
-
-
     value = int(arglist[i].flat[value])
    
 print GT
