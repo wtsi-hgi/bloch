@@ -42,7 +42,7 @@ for word in data.split():
         haplotype.append(word)
         count = 1
         continue
-    
+        
     elif count==1:        
         try:
             #Frequencies stored as integers and appended to the list frequency
@@ -56,7 +56,7 @@ for word in data.split():
         continue
 
 #Set length of first haplotype to equal haplolength
-haplolength = len(haplotype[0])
+haplolength= len(haplotype[0])
 
 #Set number of haplotypes to equal haplonum
 haplonum = len(haplotype)
