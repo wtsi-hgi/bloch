@@ -36,6 +36,30 @@ def nodesplit(G,n,l,level):
                 level[i] += 1
 
 
+#Function merges 2 nodes. a should always be < b
+def mergenodes(a,b):
+    global G
+
+    #Iterate through haplotypes on second node
+    for key, value in G.node[b]['hap'].iteritems():
+        #If haplotype exists in dictionary of node a. Add weight to dictionary
+        if key in G.node[a]['hap']:
+            G.node[a]['hap'][key] += value
+        #Otherwise add key and value to dictionary of node a
+        else:
+            G.node[a]['hap'].update({key:value})
+
+    #Move all incoming edges of b to a
+    for i in G.in_edges(b, data=True, keys=True):
+        G.add_edge(i[0],a,a=i[3]['a'],weight=i[3]['weight'])
+        G.remove_edge(i[0],i[1],key=i[2])
+
+    #Remove node b form G
+    G.remove_node(b)
+        
+    #Remove node from gl
+
+
 #Merge function carries out pairwise test between all nodes on given level and merges the lowest scoring nodes.
 #Cycle is repeated until no more merges can be made on the give level.
 def merge(l):
