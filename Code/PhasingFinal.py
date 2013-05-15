@@ -59,14 +59,12 @@ print hlength
 
 def treealgorithm(h):      
 
-    #Number of different haplotypes
-    hnum = len(h)
     #Create list of first node in each level
     gl=[1]*(hlength+2)
 
     #Function which takes node and splits node according to haplotype dictionary attached to the node
     def nodesplit(G,n,l,level):
-        #Loop over keys in node's haplotype dictionary
+        #Loop over keys in no,de's haplotype dictionary
         for key, value in G.node[n]['hap'].iteritems():
         
             #If there exists an edge which corresponds to first character of key.
@@ -91,6 +89,7 @@ def treealgorithm(h):
 
     #Functinon tests if two nodes are similar enough to merge. Returns similarity score or false.
     def mergetest(a,b,l):
+        print "mergetest"
         print a,b,l
         print G.node[a]
         print G.node[b]
@@ -130,13 +129,15 @@ def treealgorithm(h):
                 if i in da:
                     s = math.fabs(float(da[i])/float(ta))
                     if s > thr:
+                        print "mergetest false 1"
                         return False
                     elif s > maxs:
                         maxs = s
 
                 if i in db:
                     s = math.fabs(float(db[i])/float(tb))
-                    if s > thr:                    
+                    if s > thr:
+                        print "mergetest false 2"
                         return False
                     elif s > maxs:
                         maxs = s
@@ -144,7 +145,8 @@ def treealgorithm(h):
             #Iterates through alleles which are a member of both node's outgoing edges
             for i in list(sa.intersection(sb)):
                 s = math.fabs(float(da[i])/ta - (float(db[i])/tb))
-                if s > thr:   
+                if s > thr:
+                    print "mergetest false 3"
                     return False                
                 else:
                     if s > maxs:
@@ -186,8 +188,12 @@ def treealgorithm(h):
             if b <= i:
                 gl[gl.index(i)] = gl[gl.index(i)] - 1
 
+        nodes = list(set(G.nodes()) - set([i for i in range(b+1)] ))
+        
+        mapping=dict(zip(nodes,range(b,len(G.nodes())+1)))
+        
         #Relablel nodes so that they are consecutive integers
-        G = nx.convert_node_labels_to_integers(G, first_label=1, ordering="sorted")
+        G = nx.relabel_nodes(G, mapping, copy=False)
 
     #Merge function carries out pairwise test between all nodes on given level and merges the lowest scoring nodes.
     #Cycle is repeated until no more merges can be made on the give level.
@@ -207,6 +213,7 @@ def treealgorithm(h):
                 return
             #Merge nodes
             else:
+                print "mergetest pased with 2 nodes"
                 mergenodes(G, gl[l]-1,gl[l])
 
         #If there are more than 2 nodes in a level, all pairs of nodes are compared and lowest scoring is merged.
@@ -226,6 +233,8 @@ def treealgorithm(h):
                             if testscore == False:
                                 continue
                             else:
+                                print "mergetest passed for nodes"
+                                print j,k
                                 #Details of lowest scoring pair are stored
                                 if testscore < levelmin:
                                     levelmin = testscore
@@ -233,10 +242,17 @@ def treealgorithm(h):
                                     mink = k                
                                 
                 #The lowest scoring pair of nodes are merged
-                if levelmin != 10000000:                
+                if levelmin != 10000000:
+                    print "mergetest passed with minimum score for nodes"
+                    print minj, mink
                     mergenodes(G, minj,mink)                
                     #Whenever a merge has taken place, merge is set to True so that the loop is repeated
                     merge = True
+                    print gl
+                    for i in G.nodes(data=True):
+                        print i
+                    for i in G.edges(data=True, keys=True):
+                        print i
 
     #Create networkx MultiGraph
     G=nx.MultiDiGraph()
@@ -246,8 +262,10 @@ def treealgorithm(h):
     nodesplit(G,1,0,gl)
     merge(G,1)
     print gl
-    print G.nodes()
-    print G.edges()
+    for i in G.nodes(data=True):
+        print i
+    for i in G.edges(data=True, keys=True):
+        print i
 
     for i in range(1,hlength):
         print "i"
@@ -258,13 +276,21 @@ def treealgorithm(h):
             print G.node[j]
             nodesplit(G,j,i,gl)
         print gl
-        print G.nodes()
-        print G.edges()
+        
+        for k in G.nodes(data=True):
+            print k
+        
+        for k in G.edges(data=True, keys=True):
+            print k
+       
         print "merge"
+       
         merge(G,i+1)
         print gl
-        print G.nodes()
-        print G.edges()
+        for i in G.nodes(data=True):
+            print i
+        for i in G.edges(data=True, keys=True):
+            print i
 
     #Set endnode as first node in last level
     endnode = gl[-1]+1
@@ -280,7 +306,7 @@ def treealgorithm(h):
     return G
 print "haplotypes"
 print haplotypes
-haplotypes = {'0110': 50, '0111': 19, '0000': 23, '0001': 75, '0011': 100, '0010': 27, '0101': 4, '0100': 13, '1111': 11, '1110': 13, '1100': 4, '1101': 2, '1010': 11, '1011': 132, '1001': 95, '1000': 21}
+
 #Input into tree algorithm
 G = treealgorithm(haplotypes)
 
