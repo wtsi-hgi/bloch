@@ -329,4 +329,8 @@ glevel[haplolength]=endnode
     
 #Plot resulting tree
 plot_tree(G, name='v3.png')
-
+for i in G.edges(data=True, keys=True):
+    print i
+print nx.adjacency_matrix(G)
+for i in G[6][9]:
+    print i
