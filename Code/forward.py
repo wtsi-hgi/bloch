@@ -24,6 +24,8 @@ from v3 import G, glevel
 
 #ll is number of levels in the graph
 ll = len(glevel) -1
+print "ll"
+print ll
 
 #Set the genotype
 GT = [('?','?'),(1,1),(1,2),(1,2)]
@@ -35,8 +37,7 @@ n = [G.out_degree(1)]
 m = [np.zeros(shape=(n[0],n[0]))]
 
 #Append matrices to list m
-for i in range(ll-1):
-    
+for i in range(ll-1):    
     #Sum n for each level
     n.append(G.out_degree(glevel[i]+1))
     for j in range(glevel[i]+2, glevel[i+1]+1):

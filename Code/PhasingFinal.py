@@ -14,6 +14,10 @@
 import csv
 import networkx as nx
 import random
+import numpy as np
+import itertools
+import math
+
 
 #Extract genotypes from data
 with open('/Users/mp18/Documents/bloch/Data/Table_1', 'rb') as f:
@@ -55,33 +59,43 @@ for i in GT:
 
 #Haplotype length
 hlength = len(a)-1
-print hlength
 
 def treealgorithm(h):      
 
-    #Create list of first node in each level
-    gl=[1]*(hlength+2)
-
     #Function which takes node and splits node according to haplotype dictionary attached to the node
     def nodesplit(G,n,l,level):
+        print "n, l , level"
+        print n, l, level
         #Loop over keys in no,de's haplotype dictionary
         for key, value in G.node[n]['hap'].iteritems():
-        
+            print key, value
+            print G.out_edges(n,data=True, keys=True)
             #If there exists an edge which corresponds to first character of key.
-            if key[0] in [(edata['a']) for u,v,k,edata in G.out_edges(n,data=True, keys=True)]:
-                #Add value to weight variable on edge
-                G.edge[u][v][k]['weight'] += value
-                #Add haplotype suffix and value to dictionary of connecting node
-                G.node[v]['hap'].update({key[1:]:value})
+            for u,v,k,edata in G.out_edges(n,data=True, keys=True):
+                if key[0] == edata['a']:
+                    
+                    
+                    if n == 4:
+                        print "*************"
+                    #Add value to weight variable on edge
+                    print u, v, k, G.edge[u][v][k]['weight']
+                    G.edge[u][v][k]['weight'] += value
+                    print u, v, k, G.edge[u][v][k]['weight']
+                    #Add haplotype suffix and value to dictionary of connecting node
+                    G.node[v]['hap'][key[1:]]=value
+                    print G.nodes(data=True)
+                    break
 
             #If there does not exist an edge.
             else:
                 m = level[l+1]+1
-            
+                              
                 #Create edge and label it with first character of key
                 G.add_edge(n,m,a=key[0],weight=value)
                 #Assign dictionary of suffix of that key to node that has been created.
                 G.add_node(m, hap={key[1:]:value})
+                
+                print G.nodes(data=True)
             
                 #Add node to gl
                 for i in range(l+1, len(level)):
@@ -89,10 +103,6 @@ def treealgorithm(h):
 
     #Functinon tests if two nodes are similar enough to merge. Returns similarity score or false.
     def mergetest(a,b,l):
-        print "mergetest"
-        print a,b,l
-        print G.node[a]
-        print G.node[b]
         #Components of formula are calculated
         ta = sum(G.node[a]['hap'].itervalues())
         tb = sum(G.node[b]['hap'].itervalues())
@@ -122,22 +132,20 @@ def treealgorithm(h):
     
             sa = set(da.keys())
             sb = set(db.keys())
-
+            
             #Iterates through alelles which are not a member of both node's outgoing edges and tests score against threshold
             for i in list(sa.symmetric_difference(sb)):
             
                 if i in da:
                     s = math.fabs(float(da[i])/float(ta))
                     if s > thr:
-                        print "mergetest false 1"
-                        return False
+                         return False
                     elif s > maxs:
                         maxs = s
 
                 if i in db:
                     s = math.fabs(float(db[i])/float(tb))
                     if s > thr:
-                        print "mergetest false 2"
                         return False
                     elif s > maxs:
                         maxs = s
@@ -146,7 +154,6 @@ def treealgorithm(h):
             for i in list(sa.intersection(sb)):
                 s = math.fabs(float(da[i])/ta - (float(db[i])/tb))
                 if s > thr:
-                    print "mergetest false 3"
                     return False                
                 else:
                     if s > maxs:
@@ -164,8 +171,9 @@ def treealgorithm(h):
 
     #Function merges 2 nodes. a should always be < b
     def mergenodes(G,a,b):
+        print "mergenodes start"
+        print a,b
         
-    
         #Iterate through haplotypes on second node
         for key, value in G.node[b]['hap'].iteritems():
             #If haplotype exists in dictionary of node a. Add weight to dictionary
@@ -188,12 +196,17 @@ def treealgorithm(h):
             if b <= i:
                 gl[gl.index(i)] = gl[gl.index(i)] - 1
 
-        nodes = list(set(G.nodes()) - set([i for i in range(b+1)] ))
-        
+        nodes = list(set(G.nodes()) - set([i for i in range(b+1)]))        
         mapping=dict(zip(nodes,range(b,len(G.nodes())+1)))
         
         #Relablel nodes so that they are consecutive integers
         G = nx.relabel_nodes(G, mapping, copy=False)
+
+        print "mergenodes end"
+        for k in G.nodes(data=True):
+             print k
+        for k in G.edges(data=True, keys=True):
+            print k
 
     #Merge function carries out pairwise test between all nodes on given level and merges the lowest scoring nodes.
     #Cycle is repeated until no more merges can be made on the give level.
@@ -213,7 +226,6 @@ def treealgorithm(h):
                 return
             #Merge nodes
             else:
-                print "mergetest pased with 2 nodes"
                 mergenodes(G, gl[l]-1,gl[l])
 
         #If there are more than 2 nodes in a level, all pairs of nodes are compared and lowest scoring is merged.
@@ -233,8 +245,7 @@ def treealgorithm(h):
                             if testscore == False:
                                 continue
                             else:
-                                print "mergetest passed for nodes"
-                                print j,k
+
                                 #Details of lowest scoring pair are stored
                                 if testscore < levelmin:
                                     levelmin = testscore
@@ -243,17 +254,14 @@ def treealgorithm(h):
                                 
                 #The lowest scoring pair of nodes are merged
                 if levelmin != 10000000:
-                    print "mergetest passed with minimum score for nodes"
-                    print minj, mink
+                    
                     mergenodes(G, minj,mink)                
                     #Whenever a merge has taken place, merge is set to True so that the loop is repeated
                     merge = True
-                    print gl
-                    for i in G.nodes(data=True):
-                        print i
-                    for i in G.edges(data=True, keys=True):
-                        print i
 
+    #Create list of first node in each level
+    gl=[1]*(hlength+2)
+    
     #Create networkx MultiGraph
     G=nx.MultiDiGraph()
 
@@ -271,26 +279,20 @@ def treealgorithm(h):
         print "i"
         print i
         for j in range(gl[i-1]+1,gl[i]+1):
-            print "i,j"
-            print i,j
-            print G.node[j]
             nodesplit(G,j,i,gl)
+        print "after nodesplit"
         print gl
-        
         for k in G.nodes(data=True):
-            print k
-        
+             print k
         for k in G.edges(data=True, keys=True):
             print k
-       
-        print "merge"
-       
+        
         merge(G,i+1)
-        print gl
-        for i in G.nodes(data=True):
-            print i
-        for i in G.edges(data=True, keys=True):
-            print i
+        print "after merge"
+        for k in G.nodes(data=True):
+             print k
+        for k in G.edges(data=True, keys=True):
+            print k
 
     #Set endnode as first node in last level
     endnode = gl[-1]+1
@@ -298,20 +300,33 @@ def treealgorithm(h):
     #Iterate through all nodes on penultimate level
     for i in range(gl[-3]+1,gl[-2]+1):
         for key, value in G.node[i]['hap'].iteritems():
-            print i,key,value
             G.add_edge(i,endnode,a=key,weight=value)
 
     #Set glevel so it is correct    
     gl[-1] = endnode    
-    return G
+    return (G, gl)
+
+
 print "haplotypes"
 print haplotypes
 
+haplotypes = {'0110': 51, '0111': 21, '0000': 29, '0001': 68, '0011': 103, '0010': 23, '0101': 3, '0100': 13, '1111': 7, '1110': 9, '1100': 4, '1101': 8, '1010': 16, '1011': 133, '1001': 95, '1000': 17}
 #Input into tree algorithm
-G = treealgorithm(haplotypes)
+T = treealgorithm(haplotypes)
 
+for i in T[0].nodes(data=True):
+    print i
+
+for i in T[0].edges(data=True, keys=True):
+    print i
+print T[1]
 #Carry out forward algorithm and backward sampling once conditional on each genotype. Save output of backward sampling
+gt = GT[0]
+print gt
 
+#def forwardbackward(G, gt):
+
+    
 #Reverse marker order. Use as input to next iteration.
 
 
