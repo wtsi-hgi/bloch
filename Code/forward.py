@@ -96,6 +96,7 @@ def haptrans((e,d)):
     else:
         return 0.0
 
+
 #Diploid transition probabilities
 def diptrans(a,b):
     return haptrans(a)*haptrans(b)
