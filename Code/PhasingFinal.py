@@ -18,6 +18,83 @@ import numpy as np
 import itertools
 import math
 
+class HMM:
+    def __init__(self, T, gt):
+        self.T = T
+        self.gt = gt
+        
+    #Haploid initial state probabilities. allele: allele number.
+    def hapinitial(self, allele):    
+        #Edge counts are used. Count of edge/Total count for all edges.
+        for i in self.T[0].out_edges(1, data=True):        
+            if i[2]['a'] == allele:           
+                return float(i[2]['weight'])/float(sum(self.T[0].node[1]['hap'].itervalues()))
+
+    #Diploid initial state probabilities. a,b: allele number
+    def dipinitial(self, a,b):    
+        return float(self.hapinitial(a))*float(self.hapinitial(b))
+
+    #Emission state probabilities. gt: genotype. s: tuple of alleles.
+    def emission(self, i,s):
+        #If one allele is unknown. If known allele is contained in s then 1 is returned.
+        if self.gt[i].count('.') == 1:
+            for i in self.gt[i]:
+                if (i == "|") or (i == "\\"):
+                    continue
+                if i != '.':
+                    if i in s:
+                        return 1
+                    else:
+                        return 0
+                
+        #If both alleles are unknown 1 is returned
+        elif self.gt[i].count('.') == 2:        
+            return 1
+
+        #If gt equals s without order 1 is returned
+        else:
+            if set([self.gt[i][0],self.gt[i][-1]]) == set(s):
+                return 1
+            else:
+                return 0
+
+    #Transition state probabilities. e,d: edge tuples incl data
+    def haptrans(self, (e,d)):
+        #If parent node of edge e is child node of edge d.
+        if e[0] == d[1]:
+
+            #Edge count/parent node count is returned
+            return float(e[3]['weight'])/float(sum(self.T[0].node[e[0]]['hap'].itervalues())) 
+        else:
+            return 0.0
+
+    #Diploid transition probabilities
+    def diptrans(self, a,b):
+        return float(self.haptrans(a))*float(self.haptrans(b))
+
+    #Function to find edge corresponding to matrix coordinate. g=flattened index. l=level(index of m), e = number of edges
+    def findedge(self,g,l,e):    
+        #Convert flattened index to coordinate
+        t = np.unravel_index(g, (e,e))    
+        f = [-1,-1]
+        if l == 0:
+            x = 1
+        else:
+            x = [j for j in range(self.T[1][l-1]+1,self.T[1][l]+1)]        
+        
+        #Set f to equal tuple of ordered edges that the index g corresponds to
+        for a, b in enumerate(self.T[0].out_edges(nbunch=x, keys=True, data=True)):
+            if t[0] == a:
+                f[0] = b
+            if t[1] == a:
+                f[1] = b
+
+        if -1 in f:
+            print 'Error in findedge'
+        else:
+            return f
+    
+
 def treealgorithm(h):      
 
     #Function which takes node and splits node according to haplotype dictionary attached to the node
@@ -229,86 +306,8 @@ def treealgorithm(h):
 
 
 def forwardbackward(T, gt):
-    #Haploid initial state probabilities. allele: allele number.
-    def hapinitial(allele):    
-        #Edge counts are used. Count of edge/Total count for all edges.
-        for i in T[0].out_edges(1, data=True):        
-            if i[2]['a'] == allele:           
-                return float(i[2]['weight'])/float(sum(T[0].node[1]['hap'].itervalues()))
+    fb = HMM(T, gt)
 
-    #Diploid initial state probabilities. a,b: allele number
-    def dipinitial(a,b):    
-        return float(hapinitial(a))*float(hapinitial(b))
-
-    #Emission state probabilities. gt: genotype. s: tuple of alleles.
-    def emission(gt,s):
-        #If one allele is unknown. If known allele is contained in s then 1 is returned.
-        if gt.count('.') == 1:
-            for i in gt:
-                if (i == "|") or (i == "\\"):
-                    continue
-                if i != '.':
-                    if i in s:
-                        return 1
-                    else:
-                        return 0
-                
-        #If both alleles are unknown 1 is returned
-        elif gt.count('.') == 2:        
-            return 1
-
-        #If gt equals s without order 1 is returned
-        else:
-            if set([gt[0],gt[-1]]) == set(s):
-                return 1
-            else:
-                return 0
-
-    #Transition state probabilities. e,d: edge tuples incl data
-    def haptrans((e,d)):
-        #If parent node of edge e is child node of edge d.
-        if e[0] == d[1]:
-            
-            #Edge count/parent node count is returned
-            return float(e[3]['weight'])/float(sum(T[0].node[e[0]]['hap'].itervalues())) 
-        else:
-            return 0.0
-
-    #Diploid transition probabilities
-    def diptrans(a,b):
-       
-        if a == [(5, 8, 0, {'a': '0', 'weight': 15}), (2, 5, 0, {'a': '1', 'weight': 131})]:
-            print haptrans(a), haptrans(b)
-        if b == [(5, 7, 0, {'a': '1', 'weight': 116}), (2, 5, 0, {'a': '1', 'weight': 131})]:
-            print haptrans(b), haptrans(a)
-        if b == [(5, 8, 0, {'a': '0', 'weight': 15}), (2, 5, 0, {'a': '1', 'weight': 131})]:
-            print haptrans(b), haptrans(a)
-        if a == [(5, 7, 0, {'a': '1', 'weight': 116}), (2, 5, 0, {'a': '1', 'weight': 131})]:
-            print haptrans(a), haptrans(b)
-
-        return float(haptrans(a))*float(haptrans(b))
-
-    #Function to find edge corresponding to matrix coordinate. g=flattened index. l=level(index of m)
-    def findedge(g,l):    
-        #Convert flattened index to coordinate
-        t = np.unravel_index(g, (n[l],n[l]))    
-        f = [-1,-1]
-        if l == 0:
-            x = 1
-        else:
-            x = [j for j in range(T[1][l-1]+1,T[1][l]+1)]        
-        
-        #Set f to equal tuple of ordered edges that the index g corresponds to
-        for a, b in enumerate(T[0].out_edges(nbunch=x, keys=True, data=True)):
-            if t[0] == a:
-                f[0] = b
-            if t[1] == a:
-                f[1] = b
-
-        if -1 in f:
-            print 'Error in findedge'
-        else:
-            return f
 
     #Create n the list of the number of edges in each level
     n = [T[0].out_degree(1)]
@@ -328,15 +327,14 @@ def forwardbackward(T, gt):
 
     #Initiation. Iterate through pairs of outgoing edges from node 1.
     for a, b  in itertools.product([(i, j) for i, j in enumerate(T[0].out_edges(1, keys=True, data=True))], repeat=2):
-        print a,b
 
         #If emmsion probability does not equal 0
-        if emission(gt[0],(a[1][3]['a'],b[1][3]['a'])) != 0:              
+        if fb.emission(0,(a[1][3]['a'],b[1][3]['a'])) != 0:              
             if a[1] == b[1]:
-                t = hapinitial(a[1][3]['a'])
+                t = fb.hapinitial(a[1][3]['a'])
                 var = t*t            
             else:
-                var = dipinitial(a[1][3]['a'], b[1][3]['a'])
+                var = fb.dipinitial(a[1][3]['a'], b[1][3]['a'])
 
             #Matrix element is set to calculated diploid initial probability
             m[0][a[0]][b[0]] = var
@@ -344,25 +342,19 @@ def forwardbackward(T, gt):
 
     #Induction. Iterate through each level
     for i in range(1,hlength+1):
-        print i
-
         #Iterate through ordered pairs of outgoing edges in each level
         for a, b in itertools.product([(c, d) for c, d in enumerate(T[0].out_edges(nbunch=[j for j in range(T[1][i-1]+1,T[1][i]+1)], keys=True, data=True))], repeat=2):
-            print a, b
+
 
             #If emission probability does not equal 0
-            if emission(gt[i],(a[1][3]['a'],b[1][3]['a'])) != 0.0:
-                
-                if i == 2:
-                    print "yes"
-
+            if fb.emission(i,(a[1][3]['a'],b[1][3]['a'])) != 0.0:
                 if i == 1:
                     nodes = 1
                 else:                
                     nodes = [j for j in range(T[1][i-2]+1,T[1][i-1]+1)]
 
-                var = sum([(m[i-1][c[0]][d[0]]*diptrans([a[1],c[1]], [b[1],d[1]])) for c, d  in itertools.product([(e, f) for e, f in enumerate(T[0].out_edges(nbunch=nodes, keys=True, data=True))], repeat=2)])
-                
+                var = sum([(m[i-1][c[0]][d[0]]*fb.diptrans([a[1],c[1]], [b[1],d[1]])) for c, d  in itertools.product([(e, f) for e, f in enumerate(T[0].out_edges(nbunch=nodes, keys=True, data=True))], repeat=2)])
+               
                 #Matrix element is set to var calculation formula
                 m[i][a[0]][b[0]] = var
 
@@ -381,8 +373,7 @@ def forwardbackward(T, gt):
     #Corresponding probabilities of the chosen positions 
     p = [0]*(hlength+1)
 
-    for i in m:
-        print i
+
     #Randomly choose first element in m[3] according to initial probabilities
     s[hlength] = np.random.choice(m[hlength].size, p=inprob)
 
@@ -395,12 +386,12 @@ def forwardbackward(T, gt):
         prob = []
         #Set e to equal the edge description of edges sampled
 
-        e = findedge(s[i], i)
+        e = fb.findedge(s[i], i, n[i])
 
         #For each position in forward probability matrix of level below, calculate sampling probabilities
         for b, j in enumerate(m[i-1].flat):
-            d = findedge(b, i-1)
-            prob.append((emission(gt[i],(e[0][3]['a'],e[1][3]['a']))*diptrans((e[0],d[0]),(e[1],d[1]))*j)/m[i].flat[s[i]])
+            d = fb.findedge(b, i-1, n[i-1])
+            prob.append((fb.emission(i,(e[0][3]['a'],e[1][3]['a']))*fb.diptrans((e[0],d[0]),(e[1],d[1]))*j)/m[i].flat[s[i]])
 
         #Choose next sampled edge based on calculated probabilities
         s[i-1] = np.random.choice(m[i-1].size, p=prob)
@@ -419,7 +410,7 @@ def forwardbackward(T, gt):
     sample = ['','']
 
     for i in range(hlength+1):
-        e = findedge(s[i],i)
+        e = fb.findedge(s[i],i, n[i])
         sample[0] += e[0][3]['a']
         sample[1] += e[1][3]['a']
 
@@ -431,17 +422,19 @@ def reverseorder(haplotypes):
         reversehaplotype.update({key[::-1] : value})
     return reversehaplotype
     
-def treesequence(haplotypes):
+def treesequence(haplotypes,r):
     #Input into tree algorithm
     T = treealgorithm(haplotypes)
-    for i in T[0].nodes(data=True):
-        print i
-    for j in T[0].edges(data=True, keys=True):
-        print j
+    
     haplotypes={}
     for i in GT:
-        print i
+ 
+        
+        if r == 1:
+            i = i[::-1]
+                    
         samples = forwardbackward(T,i)
+
         for j in samples:
 
             if j in haplotypes:
@@ -465,6 +458,7 @@ haplotypes = {}
 
 #Randomly assign phase for each sample
 for i in GT:
+    
     a=''
     b=''
     for j in i:
@@ -491,33 +485,40 @@ for i in GT:
 
 #Haplotype length
 hlength = len(a)-1
-haplotypes = {'0110': 115, '0111': 1, '0000': 12, '0001': 19, '1100': 93, '1101': 139, '0101': 5, '0100': 10, '1001': 125, '1000': 81}
-print "initial haplotypes"
-print haplotypes
 
-haplotypes = treesequence(haplotypes)
+print "initial haplotypes"
+
+
+print haplotypes
+haplotypes = treesequence(haplotypes, 0)
 
 print "first iteration"
 print haplotypes
 
 iterations = 1
 
-#while iterations < 4:
-#    print iterations
-#    print "haplotypes in"
-#    print haplotypes
-#    haplotypes = reverseorder(haplotypes)
-#    print "haplotypes after reverse"
-#    print haplotypes
-#    haplotypes = treesequence(haplotypes)
-#    print "haplotypes out"
-#    print haplotypes
-#    iterations += 1
+r = 1
+#n must be odd number so that final iteration haplotypes are correct way round.
+n=9
 
+while iterations < n:
+    print iterations
+    print "haplotypes in"
+    print haplotypes
+    haplotypes = reverseorder(haplotypes)
+    print "haplotypes after reverse"
+    print haplotypes
+    print "r"
+    print r
+    haplotypes = treesequence(haplotypes,r)
+    print "haplotypes out"
+    print haplotypes
+    iterations += 1
+    r += 1
+    r = r%2
+   
 print "last haplotypes"
 print haplotypes
-
-
 
 
 
