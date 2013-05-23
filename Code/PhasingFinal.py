@@ -125,6 +125,8 @@ def treealgorithm(h):
 
     #Functinon tests if two nodes are similar enough to merge. Returns similarity score or false.
     def mergetest(a,b,l):
+        #print a, b
+        
         #Components of formula are calculated
         ta = sum(G.node[a]['hap'].itervalues())
         tb = sum(G.node[b]['hap'].itervalues())
@@ -132,6 +134,9 @@ def treealgorithm(h):
         maxs = 0
         al = [1]*(hlength-l+2)
         bl = [1]*(hlength-l+2)
+
+        
+
 
         #Subgraphs A and B are created in order to calculate similarity score
         A=nx.MultiDiGraph()
@@ -144,20 +149,38 @@ def treealgorithm(h):
         q = [[1,1,0]]
     
         while len(q) != 0:
+            #print q
 
             #Splits nodes subgraphs
             nodesplit(A,q[0][0],q[0][2],al)
             nodesplit(B,q[0][1],q[0][2],bl)
 
+            #print "Graph A"
+            #for i in A.nodes(data=True):
+            #    print i
+
+            #for i in A.edges(data=True, keys=True):
+            #    print i
+
+            #print "Graph B"
+            #for i in B.nodes(data=True):
+            #    print i
+
+            #for i in B.edges(data=True, keys=True):
+            #    print i
+
+
             da = dict((edata['a'],sum(A.node[v]['hap'].itervalues())) for u,v,edata in A.out_edges(q[0][0], data=True))
-            db = dict((edata['a'],sum(B.node[v]['hap'].itervalues())) for u,v,edata in B.out_edges(q[0][0], data=True))
+            db = dict((edata['a'],sum(B.node[v]['hap'].itervalues())) for u,v,edata in B.out_edges(q[0][1], data=True))
+           
     
             sa = set(da.keys())
             sb = set(db.keys())
             
+            
             #Iterates through alelles which are not a member of both node's outgoing edges and tests score against threshold
             for i in list(sa.symmetric_difference(sb)):
-            
+                
                 if i in da:
                     s = math.fabs(float(da[i])/float(ta))
                     if s > thr:
@@ -171,20 +194,25 @@ def treealgorithm(h):
                         return False
                     elif s > maxs:
                         maxs = s
-
+            
             #Iterates through alleles which are a member of both node's outgoing edges
             for i in list(sa.intersection(sb)):
+
                 s = math.fabs(float(da[i])/ta - (float(db[i])/tb))
+                
                 if s > thr:
                     return False                
                 else:
                     if s > maxs:
-                        maxs = s              
+                        maxs = s
+                        
                     a = [v for u,v,edata in A.out_edges(q[0][0],data=True) if edata['a']==i]                               
-                    b = [v for u,v,edata in B.out_edges(q[0][0],data=True) if edata['a']==i]
-                
+                    b = [v for u,v,edata in B.out_edges(q[0][1],data=True) if edata['a']==i]
+                   
+                    
                     #Adds next nodes to list if edges has passed edge test            
                     if len(random.choice(A.node[a[0]]['hap'].keys())) != 0:
+                        
                         q.append([a[0],b[0],q[0][2]+1])
 
             q.pop(0)
@@ -228,6 +256,7 @@ def treealgorithm(h):
     def merge(G, l):
         #Set variable nn for number of nodes
         nn = gl[l] - gl[l-1]
+        
     
         #If only one node on level.
         if nn == 1:
@@ -251,21 +280,19 @@ def treealgorithm(h):
                 levelmin = 10000000
                 minj = 0
                 mink = 0
-            
-                #Calculate merge score for each pair of nodes
-                for j in range(gl[l-1]+1, gl[l]+1):
-                    for k in range(j, gl[l]+1):                    
-                        if j != k:                        
-                            testscore = mergetest(j,k,l)                      
-                            if testscore == False:
-                                continue
-                            else:
 
-                                #Details of lowest scoring pair are stored
-                                if testscore < levelmin:
-                                    levelmin = testscore
-                                    minj = j
-                                    mink = k                
+                for j, k in itertools.combinations(range(gl[l-1]+1, gl[l]+1), 2):                    
+                    
+                    testscore = mergetest(j,k,l)                      
+                    if testscore == False:
+                        continue
+                    else:
+
+                        #Details of lowest scoring pair are stored
+                        if testscore < levelmin:
+                            levelmin = testscore
+                            minj = j
+                            mink = k                
                                 
                 #The lowest scoring pair of nodes are merged
                 if levelmin != 10000000:
@@ -283,15 +310,27 @@ def treealgorithm(h):
     #Add start node 1 and split the first node.
     G.add_node(1,hap=h)
     nodesplit(G,1,0,gl)
+
+
     merge(G,1)
-
+    
     for i in range(1,hlength):
-
+        #print "i"
+        #print i
+        
         for j in range(gl[i-1]+1,gl[i]+1):
             nodesplit(G,j,i,gl)
-       
-        merge(G,i+1)
 
+            #print "Graph G"
+            #for k in G.nodes(data=True):
+            #print k
+
+            #for k in G.edges(data=True, keys=True):
+            #print k
+            #print gl
+        
+        merge(G,i+1)
+        
     #Set endnode as first node in last level
     endnode = gl[-1]+1
 
@@ -510,6 +549,11 @@ def reverseorder(haplotypes):
 def treesequence(haplotypes,r):
     #Input into tree algorithm
     T = treealgorithm(haplotypes)
+    for i in T[0].nodes(data=True):
+        print i
+
+    for i in T[0].edges(data=True, keys = True):
+        print i
     
     haplotypes={}
     for i in GT:        
@@ -569,46 +613,56 @@ for i in GT:
 #Haplotype length
 hlength = len(a)-1
 print "initial haplotypes"
-
-haplotypes = {'0110': 53, '0111': 25, '0000': 27, '0001': 70, '0011': 96, '0010': 28, '0101': 6, '0100': 6, '1111': 9, '1110': 10, '1100': 4, '1101': 3, '1010': 15, '1011': 127, '1001': 102, '1000': 19}
+#haplotypes = {'0110': 47, '1211': 1, '0000': 24, '0001': 75, '0011': 83, '0010': 35, '0101': 12, '1201': 1, '0100': 8, '1111': 7, '1110': 6, '0111': 29, '1100': 4, '1101': 3, '1010': 14, '1011': 141, '1001': 86, '1000': 24}
 print haplotypes
 haplotypes = treesequence(haplotypes, 0)
-
-print "first iteration"
-print haplotypes
 
 iterations = 1
 
 r = 1
 #n must be odd number so that final iteration haplotypes are correct way round.
-m=1
+m=9
 
 while iterations < m:
     print iterations
-    print "haplotypes in"
+    
     print haplotypes
+    
     haplotypes = reverseorder(haplotypes)
-    print "haplotypes after reverse"
-    print haplotypes
-    print "r"
-    print r
     haplotypes = treesequence(haplotypes,r)
-    print "haplotypes out"
-    print haplotypes
     iterations += 1
     r += 1
     r = r%2
    
 print "last haplotypes"
-print haplotypes
+#print haplotypes
 
 #Input into tree algorithm
 T = treealgorithm(haplotypes)
     
 phased=[]
+correct = 0
+incorrect = 0
+
 for i in GT:
-    print i
     result = viterbi(T, i)
-    print result
-    for j in result:
-        pass
+    
+    for j in range(len(result)):
+        
+        if result[j][0] == i[j][0]:
+            correct += 1
+        else:
+            incorrect += 1
+            
+        if result[j][1] == i[j][-1]:
+            correct += 1
+        else:
+            incorrect += 1
+
+print correct
+print incorrect
+
+#To do
+#1. Store nodes on a level in a list
+#2. Delete suffix attached to node once it has been used.
+
