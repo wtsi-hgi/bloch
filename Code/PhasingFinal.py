@@ -100,7 +100,7 @@ def treealgorithm(h):
     #Function which takes node and splits node according to haplotype dictionary attached to the node
     def nodesplit(G,n,l,level):
 
-        #Loop over keys in no,de's haplotype dictionary
+        #Loop over keys in node's haplotype dictionary
         for key, value in G.node[n]['hap'].iteritems():
             #If there exists an edge which corresponds to first character of key.
             for u,v,k,edata in G.out_edges(n,data=True, keys=True):
@@ -126,7 +126,7 @@ def treealgorithm(h):
     #Functinon tests if two nodes are similar enough to merge. Returns similarity score or false.
     def mergetest(a,b,l):
         #print a, b
-        
+        #print G.node[a], G.node[b]
         #Components of formula are calculated
         ta = sum(G.node[a]['hap'].itervalues())
         tb = sum(G.node[b]['hap'].itervalues())
@@ -221,6 +221,7 @@ def treealgorithm(h):
 
     #Function merges 2 nodes. a should always be < b
     def mergenodes(G,a,b):
+        print a, b
   
         #Iterate through haplotypes on second node
         for key, value in G.node[b]['hap'].iteritems():
@@ -256,6 +257,8 @@ def treealgorithm(h):
     def merge(G, l):
         #Set variable nn for number of nodes
         nn = gl[l] - gl[l-1]
+        print "l"
+        print l
         
     
         #If only one node on level.
@@ -281,13 +284,13 @@ def treealgorithm(h):
                 minj = 0
                 mink = 0
 
-                for j, k in itertools.combinations(range(gl[l-1]+1, gl[l]+1), 2):                    
+                for j, k in itertools.combinations(range(gl[l-1]+1, gl[l]+1), 2):                  
                     
                     testscore = mergetest(j,k,l)                      
                     if testscore == False:
                         continue
                     else:
-
+                        
                         #Details of lowest scoring pair are stored
                         if testscore < levelmin:
                             levelmin = testscore
@@ -296,8 +299,15 @@ def treealgorithm(h):
                                 
                 #The lowest scoring pair of nodes are merged
                 if levelmin != 10000000:
+                    print "nodes are merged"
+                    print minj, mink
                     
-                    mergenodes(G, minj,mink)                
+                    mergenodes(G, minj,mink)
+                    for a in G.nodes(data=True):
+                        print a
+
+                    for a in G.edges(data=True, keys=True):
+                        print a
                     #Whenever a merge has taken place, merge is set to True so that the loop is repeated
                     merge = True
 
@@ -315,19 +325,19 @@ def treealgorithm(h):
     merge(G,1)
     
     for i in range(1,hlength):
-        #print "i"
-        #print i
+        print "i"
+        print i
         
         for j in range(gl[i-1]+1,gl[i]+1):
             nodesplit(G,j,i,gl)
 
-            #print "Graph G"
-            #for k in G.nodes(data=True):
-            #print k
+            print "Graph G"
+            for k in G.nodes(data=True):
+                print k
 
-            #for k in G.edges(data=True, keys=True):
-            #print k
-            #print gl
+            for k in G.edges(data=True, keys=True):
+                print k
+            print gl
         
         merge(G,i+1)
         
@@ -613,7 +623,7 @@ for i in GT:
 #Haplotype length
 hlength = len(a)-1
 print "initial haplotypes"
-#haplotypes = {'0110': 47, '1211': 1, '0000': 24, '0001': 75, '0011': 83, '0010': 35, '0101': 12, '1201': 1, '0100': 8, '1111': 7, '1110': 6, '0111': 29, '1100': 4, '1101': 3, '1010': 14, '1011': 141, '1001': 86, '1000': 24}
+haplotypes = {'0110': 47, '1211': 1, '0000': 24, '0001': 75, '0011': 83, '0010': 35, '0101': 12, '1201': 1, '0100': 8, '1111': 7, '1110': 6, '0111': 29, '1100': 4, '1101': 3, '1010': 14, '1011': 141, '1001': 86, '1000': 24}
 print haplotypes
 haplotypes = treesequence(haplotypes, 0)
 
@@ -621,7 +631,7 @@ iterations = 1
 
 r = 1
 #n must be odd number so that final iteration haplotypes are correct way round.
-m=9
+m=1
 
 while iterations < m:
     print iterations
@@ -663,6 +673,7 @@ print correct
 print incorrect
 
 #To do
-#1. Store nodes on a level in a list
+
+#1. Store nodes on a level in a list. No node relabelling
 #2. Delete suffix attached to node once it has been used.
 
