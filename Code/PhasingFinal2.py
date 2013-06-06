@@ -25,11 +25,11 @@ class HMM:
         self.gt = gt
         
     #Haploid initial state probabilities. allele: allele number.
-    def hapinitial(self, allele):    
+    def hapinitial(self, allele):
         #Edge counts are used. Count of edge/Total count for all edges.
         for i in self.T[0].out_edges(1, data=True):        
-            if i[2]['a'] == allele:           
-                return float(i[2]['weight'])/float(sum(self.T[0].node[1]['hap'].itervalues()))
+            if i[2]['a'] == allele:                
+                return float(i[2]['weight'])/float(self.T[0].out_degree(1, weight='weight'))
 
     #Diploid initial state probabilities. a,b: allele number
     def dipinitial(self, a,b):    
@@ -65,7 +65,7 @@ class HMM:
         if e[0] == d[1]:
 
             #Edge count/parent node count is returned
-            return float(e[3]['weight'])/float(sum(self.T[0].node[e[0]]['hap'].itervalues())) 
+            return float(e[3]['weight'])/float(self.T[0].out_degree(e[0],weight='weight')) 
         else:
             return 0.0
 
@@ -84,7 +84,7 @@ class HMM:
         #    x = T[1][l]        
         
         #Set f to equal tuple of ordered edges that the index g corresponds to
-        for a, b in enumerate(self.T[0].out_edges(nbunch=T[1][l], keys=True, data=True)):
+        for a, b in enumerate(self.T[0].out_edges(nbunch=self.T[1][l], keys=True, data=True)):
             if t[0] == a:
                 f[0] = b
             if t[1] == a:
@@ -104,14 +104,15 @@ def treealgorithm(h):
         #Loop over keys in node's haplotype dictionary
         for key, value in G.node[n]['hap'].iteritems():
             #If there exists an edge which corresponds to first character of key.
-            for nbr, keydict in G[n].items():
-                for k, eattr in keydict.items():
-                    if key[0] == eattr['a']:
-                        #Add value to weight variable on edge
-                        G.edge[n][nbr][k]['weight'] +=value
-                        #Add haplotype suffix and value to dictionary of connecting node
-                        G.node[nbr]['hap'][key[1:]]=value
-                        break
+            #If there exists an edge which corresponds to first character of key.
+            for u,v,k,edata in G.out_edges(n,data=True, keys=True):
+                if key[0] == edata['a']:
+                    #Add value to weight variable on edge
+                    G.edge[u][v][k]['weight'] += value
+                    #Add haplotype suffix and value to dictionary of connecting node
+                    G.node[v]['hap'][key[1:]]=value
+                    break
+           
                 
             #If there does not exist an edge.
             else:
@@ -179,12 +180,15 @@ def treealgorithm(h):
             #for i in B.nodes(data=True):
             #    print i
             #for i in B.edges(data=True, keys=True):
-            #    print i
-
+            #    print i         
+            
+            
+            
             da = dict((edata['a'],sum(A.node[v]['hap'].itervalues())) for u,v,edata in A.out_edges(q[0][0], data=True))
             db = dict((edata['a'],sum(B.node[v]['hap'].itervalues())) for u,v,edata in B.out_edges(q[0][1], data=True))
-    
-            sa = set(da.keys())
+           
+            
+            sa = set(da.keys())           
             sb = set(db.keys())            
             
             #Iterates through alelles which are not a member of both node's outgoing edges and tests score against threshold
@@ -214,7 +218,7 @@ def treealgorithm(h):
                         maxs = s
                         
                     a = [v for u,v,edata in A.out_edges(q[0][0],data=True) if edata['a']==i]                               
-                    b = [v for u,v,edata in B.out_edges(q[0][1],data=True) if edata['a']==i]                   
+                    b = [v for u,v,edata in B.out_edges(q[0][1],data=True) if edata['a']==i]
                     
                     #Adds next nodes to list if edges has passed edge test            
                     if len(random.choice(A.node[a[0]]['hap'].keys())) != 0:                        
@@ -314,6 +318,7 @@ def treealgorithm(h):
     gnodes[0].append(1)    
     
     nodesplit(G,1,gnodes)
+
     merge(1)
 
     for i in range(1,hlength):        
@@ -332,11 +337,9 @@ def treealgorithm(h):
 
     G.node[endnode]['level'] = hlength+1
 
-    #Set glevel so it is correct    
+    #Set gnodes so it is correct    
     gnodes[-1].append(endnode)
-    print "here"
-    for i in G.adjacency_iter():
-        print i
+
     print gnodes
     return (G, gnodes)
 
@@ -353,15 +356,16 @@ def forwardbackward(T, gt):
     for i in range(hlength):    
         #Sum n for each level
         n.append(0)
-        for j in T[1][i]:
+        for j in T[1][i+1]:
             n[i+1] += T[0].out_degree(j)
 
         #Append zero-filled matrix to list m
         m.append(np.zeros(shape=(n[i+1],n[i+1])))
- 
+
+    
     #Initiation. Iterate through pairs of outgoing edges from node 1.
     for a, b in itertools.product([(i, j) for i, j in enumerate(T[0].out_edges(1, keys=True, data=True))], repeat=2):
-
+        
         #If emmsion probability does not equal 0
         if fb.emission(0,(a[1][3]['a'],b[1][3]['a'])) != 0:              
             if a[1] == b[1]:
@@ -376,9 +380,10 @@ def forwardbackward(T, gt):
 
     #Induction. Iterate through each level
     for i in range(1,hlength+1):
+
         #Iterate through ordered pairs of outgoing edges in each level
         for a, b in itertools.product([(c, d) for c, d in enumerate(T[0].out_edges(nbunch=T[1][i], keys=True, data=True))], repeat=2):
-
+            
             #If emission probability does not equal 0
             if fb.emission(i,(a[1][3]['a'],b[1][3]['a'])) != 0.0:
 
@@ -452,8 +457,10 @@ def reverseorder(haplotypes):
     return reversehaplotype
     
 def treesequence(haplotypes,r):
+    print 'haplotypes',haplotypes
     #Input into tree algorithm
     T = treealgorithm(haplotypes)
+    print "here"
     for i in T[0].nodes(data=True):
         print i
 
@@ -517,10 +524,13 @@ for i in GT:
 hlength = len(a)-1
 print "initial haplotypes"
 print haplotypes
-treealgorithm(haplotypes)
+
 haplotypes = treesequence(haplotypes, 0)
+print haplotypes
 
 iterations = 1
+r=1
+m=9
 
 while iterations < m:
     print iterations    
