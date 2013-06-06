@@ -450,6 +450,85 @@ def forwardbackward(T, gt):
 
     return sample
 
+def viterbi(T, gt):
+    vi = HMM(T, gt)
+    #Create n the list of the number of edges in each level
+    n = [T[0].out_degree(1)]
+    
+    #v is the list of matrices of viterbi probabilities at   m each level
+    v = [np.zeros(shape=(n[0],n[0]))]
+
+
+    #arglist is the list of matrices of path to find maximum viterbi probabilities
+    arglist = [np.zeros((n[0],n[0]))]
+    arglist[0].fill(-1)
+
+    #Append matrices to list arglist
+    for i in range(hlength):
+        #Sum n for each level
+        n.append(0)
+        for j in T[1][i+1]:
+            n[i+1] += T[0].out_degree(j)
+            
+        v.append(np.zeros(shape=(n[i+1],n[i+1])))
+        arglist.append(np.zeros((n[i+1],n[i+1])))
+        arglist[i+1].fill(-1)
+
+    #Initiation. Iterate through pairs of outgoing edges from node 1. SAME AS FORWARD ALGORITHM.
+    for a, b in itertools.product([(i, j) for i, j in enumerate(T[0].out_edges(1, keys=True, data=True))], repeat=2):
+    
+        #If emmsion probability does not equal 0
+        if vi.emission(0,(a[1][3]['a'],b[1][3]['a'])) != 0:               
+            if a[1] == b[1]:
+                t = vi.hapinitial(a[1][3]['a'])
+                var = t*t            
+            else:
+                var = vi.dipinitial(a[1][3]['a'], b[1][3]['a'])
+
+            #Matrix element is set to calculated diploid initial probability
+            v[0][a[0]][b[0]] = var
+
+
+    #Induction. Iterate through each level
+    for i in range(1,hlength+1):
+
+        #Iterate through ordered pairs of outgoing edges in each level
+        for a, b in itertools.product([(c, d) for c, d in enumerate(T[0].out_edges(nbunch=T[1][i], keys=True, data=True))], repeat=2):       
+
+            #If emission probability does not equal 0
+            if vi.emission(i,(a[1][3]['a'],b[1][3]['a'])) != 0:
+
+                max = 0
+                args = -1
+
+                #Calculate maximum value and record which edges correspond.
+                for c, d  in itertools.product([(e, f) for e, f in enumerate(T[0].out_edges(nbunch=T[1][i-1], keys=True, data=True))], repeat=2):                    
+                    value = (v[i-1][c[0]][d[0]]*vi.diptrans([a[1],c[1]], [b[1],d[1]]))
+                   
+                    if max < value:
+                        max = value                    
+                        args = np.ravel_multi_index((c[0],d[0]), (n[i-1],n[i-1]), mode='raise')                   
+                  
+                #Matrix element is set to maximum and element this comes from is recorded.
+                v[i][a[0]][b[0]] = max
+                
+                arglist[i][a[0]][b[0]] = args
+
+
+    #Backtracking process
+    value =  v[hlength].argmax()
+
+    phased = []
+
+    #Iterate through levels bacwards and create list of phased alleles.
+    for i in range(hlength,-1, -1):
+        edge = vi.findedge(value, i, n[i])
+        phased.insert(0,(edge[0][3]['a'],(edge[1][3]['a'])))
+        value = int(arglist[i].flat[value])
+
+
+    return phased
+
 def reverseorder(haplotypes):
     reversehaplotype = {}
     for key, value in haplotypes.iteritems():
@@ -544,3 +623,28 @@ while iterations < m:
 
 print "last haplotypes"
 print haplotypes
+
+#Input into tree algorithm
+T = treealgorithm(haplotypes)
+    
+phased=[]
+correct = 0
+incorrect = 0
+
+for i in GT:
+    result = viterbi(T, i)
+    
+    for j in range(len(result)):
+        
+        if result[j][0] == i[j][0]:
+            correct += 1
+        else:
+            incorrect += 1
+            
+        if result[j][1] == i[j][-1]:
+            correct += 1
+        else:
+            incorrect += 1
+
+print correct
+print incorrect
