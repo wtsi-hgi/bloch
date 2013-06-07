@@ -17,6 +17,7 @@ import random
 import numpy as np
 import itertools
 import math
+import sys
 
 
 class HMM:
@@ -340,10 +341,17 @@ def treealgorithm(h):
     #Set gnodes so it is correct    
     gnodes[-1].append(endnode)
 
-    print gnodes
     return (G, gnodes)
 
 def forwardbackward(T, gt):
+
+    def random_weighted_choice(weights):
+        rnd = random.random() * sum(weights)
+        for i, w in enumerate(weights):
+            rnd -= w
+            if rnd < 0:
+                return i
+        
     fb = HMM(T, gt)
 
     #Create n the list of the number of edges in each level
@@ -394,12 +402,9 @@ def forwardbackward(T, gt):
 
 
     #Backwards sampling
-    #Initial probability
-    inprob = []
+    
+    
 
-    #Create probability distribution for sampling first allele
-    for i in m[3].flat:
-        inprob.append(i/m[hlength].sum())
 
     #List of  flattened indices chosen from sampling 
     s = [0]*(hlength+1)
@@ -407,12 +412,11 @@ def forwardbackward(T, gt):
     #Corresponding probabilities of the chosen positions 
     p = [0]*(hlength+1)
 
-
     #Randomly choose first element in m[3] according to initial probabilities
-    s[hlength] = np.random.choice(m[hlength].size, p=inprob)
+    s[hlength] = random_weighted_choice(m[3].flatten())
 
     #Set probability of the chosen position
-    p[hlength] = inprob[s[hlength]]
+    p[hlength] = m[3].flatten()[s[hlength]]
 
     #Iterate through levels in reverse order
     for i in range(hlength, 0, -1):
@@ -428,7 +432,7 @@ def forwardbackward(T, gt):
             prob.append((fb.emission(i,(e[0][3]['a'],e[1][3]['a']))*fb.diptrans((e[0],d[0]),(e[1],d[1]))*j)/m[i].flat[s[i]])
 
         #Choose next sampled edge based on calculated probabilities
-        s[i-1] = np.random.choice(m[i-1].size, p=prob)
+        s[i-1] = random_weighted_choice(prob)
 
         #Record probability of chosen edges.
         p[i-1] = prob[s[i-1]]
@@ -536,16 +540,10 @@ def reverseorder(haplotypes):
     return reversehaplotype
     
 def treesequence(haplotypes,r):
-    print 'haplotypes',haplotypes
+    
     #Input into tree algorithm
     T = treealgorithm(haplotypes)
-    print "here"
-    for i in T[0].nodes(data=True):
-        print i
-
-    for i in T[0].edges(data=True, keys = True):
-        print i
-    
+       
     haplotypes={}
     for i in GT:        
         if r == 1:
@@ -567,6 +565,7 @@ with open('/Users/mp18/Documents/bloch/Data/Table_1', 'rb') as f:
     #Create list of tuples which contain genotypes of each individual
     GT = zip(*reader)
 
+f.close()
 #Remove first tuple of position names
 del GT[0]
 
@@ -601,19 +600,16 @@ for i in GT:
 
 #Haplotype length
 hlength = len(a)-1
-print "initial haplotypes"
-print haplotypes
+
 
 haplotypes = treesequence(haplotypes, 0)
-print haplotypes
-
+sys.stdout.write("9 iterations altogether\n1\n")
 iterations = 1
 r=1
-m=9
+m=10
 
 while iterations < m:
-    print iterations    
-    print haplotypes
+    sys.stdout.write(str(iterations+1)+"\n")    
     
     haplotypes = reverseorder(haplotypes)
     haplotypes = treesequence(haplotypes,r)
@@ -621,8 +617,8 @@ while iterations < m:
     r += 1
     r = r%2
 
-print "last haplotypes"
-print haplotypes
+    #print "last haplotypes"
+    #print haplotypes
 
 #Input into tree algorithm
 T = treealgorithm(haplotypes)
@@ -646,5 +642,8 @@ for i in GT:
         else:
             incorrect += 1
 
-print correct
-print incorrect
+g = open("output.txt", "w")
+g.write("Correct: "+ str(correct)+"\n")
+g.write("Incorrect: "+str(incorrect))
+
+g.close()
