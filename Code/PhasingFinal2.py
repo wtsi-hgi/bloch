@@ -30,7 +30,7 @@ class HMM:
         #Edge counts are used. Count of edge/Total count for all edges.
         for i in self.T[0].out_edges(1, data=True):        
             if i[2]['a'] == allele:                
-                return float(i[2]['weight'])/float(self.T[0].out_degree(1, weight='weight'))
+                return float(i[2]['weight'])/float(self.T[0].node[1]['weight'])
 
     #Diploid initial state probabilities. a,b: allele number
     def dipinitial(self, a,b):    
@@ -65,8 +65,8 @@ class HMM:
         #If parent node of edge e is child node of edge d.
         if e[0] == d[1]:
 
-            #Edge count/parent node count is returned
-            return float(e[3]['weight'])/float(self.T[0].out_degree(e[0],weight='weight')) 
+            #Edge count/parent node count is returned            
+            return float(e[3]['weight'])/float(self.T[0].node[e[0]]['weight']) 
         else:
             return 0.0
 
@@ -75,7 +75,8 @@ class HMM:
         return float(self.haptrans(a))*float(self.haptrans(b))
 
     #Function to find edge corresponding to matrix coordinate. g=flattened index. l=level(index of m), e = number of edges
-    def findedge(self,g,l,e):    
+    def findedge(self,g,l,e):
+
         #Convert flattened index to coordinate
         t = np.unravel_index(g, (e,e))    
         f = [-1,-1]
@@ -83,9 +84,10 @@ class HMM:
         #    x = 1
         #else:
         #    x = T[1][l]        
-        
+ 
         #Set f to equal tuple of ordered edges that the index g corresponds to
         for a, b in enumerate(self.T[0].out_edges(nbunch=self.T[1][l], keys=True, data=True)):
+          
             if t[0] == a:
                 f[0] = b
             if t[1] == a:
@@ -94,12 +96,14 @@ class HMM:
         if -1 in f:
             print 'Error in findedge'
         else:
+
             return f
         
 def treealgorithm(h):
 
     #Function which takes node and splits node according to haplotype dictionary attached to the node
     def nodesplit(G,n,nodes):
+
         l = G.node[n]['level']
         
         #Loop over keys in node's haplotype dictionary
@@ -128,7 +132,8 @@ def treealgorithm(h):
                 G.add_node(m, hap={key[1:]:value},level=l+1)
                 #Add node to list of nodes
                 nodes[l+1].append(m)
-
+        
+        G.add_node(n, weight=sum(G.node[n]['hap'].values()))
         #Remove haplotype information of node that has been split
         del G.node[n]['hap']
 
@@ -152,7 +157,6 @@ def treealgorithm(h):
         for i in range(hlength-G.node[a]['level']+2):
             anodes.append([])
             bnodes.append([])
-
 
         #Subgraphs A and B are created in order to calculate similarity score
         A=nx.MultiDiGraph()
@@ -181,13 +185,10 @@ def treealgorithm(h):
             #for i in B.nodes(data=True):
             #    print i
             #for i in B.edges(data=True, keys=True):
-            #    print i         
-            
-            
+            #    print i                                
             
             da = dict((edata['a'],sum(A.node[v]['hap'].itervalues())) for u,v,edata in A.out_edges(q[0][0], data=True))
-            db = dict((edata['a'],sum(B.node[v]['hap'].itervalues())) for u,v,edata in B.out_edges(q[0][1], data=True))
-           
+            db = dict((edata['a'],sum(B.node[v]['hap'].itervalues())) for u,v,edata in B.out_edges(q[0][1], data=True))          
             
             sa = set(da.keys())           
             sb = set(db.keys())            
@@ -249,6 +250,7 @@ def treealgorithm(h):
             G.add_edge(i[0],a,a=i[3]['a'],weight=i[3]['weight'])
             G.remove_edge(i[0],i[1],key=i[2])
 
+            #G.add_node(a, weight=sum(G.node[a]['hap'].values()))
         #Remove node b from G
         G.remove_node(b)
         
@@ -312,7 +314,7 @@ def treealgorithm(h):
 
     #Create networkx MultiGraph
     G=nx.MultiDiGraph()
-
+    
     #Add start node 1 and split the first node.
     G.add_node(1,hap=h,level=0)
     
@@ -334,12 +336,18 @@ def treealgorithm(h):
     for i in gnodes[-2]:
         for key, value in G.node[i]['hap'].iteritems():
             G.add_edge(i,endnode,a=key,weight=value)
+        G.add_node(i, weight=sum(G.node[i]['hap'].values()))
         del G.node[i]['hap']
 
     G.node[endnode]['level'] = hlength+1
 
     #Set gnodes so it is correct    
     gnodes[-1].append(endnode)
+    for i in G.nodes(data=True):
+        print i
+
+    for i in G.edges(data=True, keys=True):
+        print i
 
     return (G, gnodes)
 
@@ -357,6 +365,7 @@ def forwardbackward(T, gt):
     #Create n the list of the number of edges in each level
     n = [T[0].out_degree(1)]
 
+
     #m is the list of matrices of forward probabilities at each level
     m = [np.zeros(shape=(n[0],n[0]))]
 
@@ -366,7 +375,7 @@ def forwardbackward(T, gt):
         n.append(0)
         for j in T[1][i+1]:
             n[i+1] += T[0].out_degree(j)
-
+        
         #Append zero-filled matrix to list m
         m.append(np.zeros(shape=(n[i+1],n[i+1])))
 
@@ -402,8 +411,6 @@ def forwardbackward(T, gt):
 
 
     #Backwards sampling
-    
-    
 
 
     #List of  flattened indices chosen from sampling 
@@ -411,12 +418,12 @@ def forwardbackward(T, gt):
 
     #Corresponding probabilities of the chosen positions 
     p = [0]*(hlength+1)
-
     #Randomly choose first element in m[3] according to initial probabilities
-    s[hlength] = random_weighted_choice(m[3].flatten())
+    s[hlength] = random_weighted_choice(m[hlength].flatten())
+    
 
     #Set probability of the chosen position
-    p[hlength] = m[3].flatten()[s[hlength]]
+    p[hlength] = m[hlength].flatten()[s[hlength]]
 
     #Iterate through levels in reverse order
     for i in range(hlength, 0, -1):
@@ -437,6 +444,7 @@ def forwardbackward(T, gt):
         #Record probability of chosen edges.
         p[i-1] = prob[s[i-1]]
 
+
     #Print descriptive list of chosen edges
     #for i in range(hlength+1):
     #print findedge(s[i], i)
@@ -444,6 +452,9 @@ def forwardbackward(T, gt):
 
     #Calculate probability of sampled path
     #print np.product(p)*2
+
+
+        
 
     sample = ['','']
 
@@ -457,7 +468,7 @@ def forwardbackward(T, gt):
 def viterbi(T, gt):
     vi = HMM(T, gt)
     #Create n the list of the number of edges in each level
-    n = [T[0].out_degree(1)]
+    n = [T[0].node[1]['weight']]
     
     #v is the list of matrices of viterbi probabilities at   m each level
     v = [np.zeros(shape=(n[0],n[0]))]
@@ -472,7 +483,7 @@ def viterbi(T, gt):
         #Sum n for each level
         n.append(0)
         for j in T[1][i+1]:
-            n[i+1] += T[0].out_degree(j)
+            n[i+1] += T[0].node[j]['weight']
             
         v.append(np.zeros(shape=(n[i+1],n[i+1])))
         arglist.append(np.zeros((n[i+1],n[i+1])))
@@ -600,13 +611,14 @@ for i in GT:
 
 #Haplotype length
 hlength = len(a)-1
-
-
-haplotypes = treesequence(haplotypes, 0)
-sys.stdout.write("9 iterations altogether\n1\n")
 iterations = 1
 r=1
-m=10
+#m has to be an odd number
+m=1
+
+haplotypes = treesequence(haplotypes, 0)
+sys.stdout.write(str(m)+" iterations altogether\n1\n")
+
 
 while iterations < m:
     sys.stdout.write(str(iterations+1)+"\n")    
