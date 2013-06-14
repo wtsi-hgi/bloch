@@ -18,8 +18,7 @@ import numpy as np
 import itertools
 import math
 import sys
-
-
+        
 class HMM:
     def __init__(self, T, gt):
         self.T = T
@@ -278,8 +277,46 @@ def treealgorithm(h):
 
         #If there are more than 2 nodes in a level, all pairs of nodes are compared and lowest scoring is merged.
         else:
+            #Create copy of list of nodes on the level
+            nlist = list(gnodes[l])
+            
+            #n is the number of nodes on that level
+            n = len(nlist)
+
+            #k list of 0s to mark which nodes have been deleted
+            k = [0]*n            
+            
+            #Create empty numpy matrix of similarity scores
+            simmatrix = np.zeros((n,n))
+
+            #Calculate values in half of matrix
+            for j, k in itertools.combinations(enumerate(gnodes[l]), 2):
+                 simmatrix[j[0],k[0]] = mergetest(j[1],k[1])
+            
+            print simmatrix
+             
+            #While some values in matrix are not equal to zero
+            while np.count_nonzero(simmatrix) != 0:
+                
+                ma = np.ma.masked_equal(simmatrix, 0.0, copy=False)
+                
+                mnodes = np.unravel_index(ma.argmin(), (n,n))
+                mergenodes(mnodes[0],mnodes[1])
+
+                #deleted nodes need to be marked
+                #deleted nodes rows and colums turned to 0
+                #merged node needs row/column recalculated
+                
+
+
+            
             merge = True
-            while merge == True:
+            while merge == True:             
+
+
+
+
+                
                 merge = False
                 levelmin = 10000000
                 minj = 0
