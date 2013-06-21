@@ -233,6 +233,7 @@ def treealgorithm(h):
 
     #Function merges 2 nodes. a should always be < b
     def mergenodes(a,b):
+        
         if G.node[a]['level'] != G.node[b]['level']:
             raise ValueError('Nodes to merged are not on the same level')        
   
@@ -291,7 +292,7 @@ def treealgorithm(h):
             simmatrix = np.zeros((n,n))
 
             #Calculate values in half of matrix
-            for a, b in itertools.combinations(enumerate(gnodes[l]), 2):
+            for a, b in itertools.combinations(enumerate(nlist), 2):
                  simmatrix[a[0],b[0]] = mergetest(a[1],b[1])
              
             #While some values in matrix are not equal to zero
@@ -312,18 +313,20 @@ def treealgorithm(h):
                 #Set all matrix positions of deleted node to 0
                 for i in range(len(k)):
                     if i <= mnodes[1]:
-                        simmatrix[i][mnodes[1]] = 0
-                    elif i > mnodes[1]:
-                        simmatrix[mnodes[1]][i] = 0
+                        simmatrix[i][mnodes[1]] = 0.0
+                    elif i >= mnodes[1]:
+                        simmatrix[mnodes[1]][i] = 0.0
                                       
                 #Recalculate similarity score for changed node
                 for i in range(len(k)):
                     if k[i] == 1:
                         continue
                     else:
-                        if i <= mnodes[0]:
+                        if i == mnodes[0]:
+                            continue
+                        elif i < mnodes[0]:
                             simmatrix[i][mnodes[0]] = mergetest(nlist[i],nlist[mnodes[0]])
-                        elif i > mnodes[1]:
+                        elif i > mnodes[0]:
                             simmatrix[mnodes[0]][i] = mergetest(nlist[mnodes[0]],nlist[i])    
         
     gnodes = []
@@ -350,11 +353,13 @@ def treealgorithm(h):
 
     #Set endnode as first node in last level
     endnode = max(gnodes[-2]) +1
-
+    
     #Iterate through all nodes on penultimate level
     for i in gnodes[-2]:
+        
         for key, value in G.node[i]['hap'].iteritems():
             G.add_edge(i,endnode,a=key,weight=value)
+            
         G.add_node(i, weight=sum(G.node[i]['hap'].values()))
         del G.node[i]['hap']
 
@@ -588,46 +593,53 @@ def treesequence(haplotypes,r):
     return haplotypes
 
 #Extract genotypes from data
-with open('/Users/mp18/Documents/bloch/Data/genotype5.txt', 'rb') as f:
-    reader = csv.reader(f, delimiter='\t',skipinitialspace = True)
-    #Create list of tuples which contain genotypes of each individual
-    GT = zip(*reader)
+#with open('/Users/mp18/Documents/bloch/Data/genotype5.txt', 'rb') as f:
+#    reader = csv.reader(f, delimiter='\t',skipinitialspace = True)
+#    #Create list of tuples which contain genotypes of each individual
+#    GT = zip(*reader)
 
-f.close()
+#f.close()
 #Remove first tuple of position names
-del GT[0]
+#del GT[0]
 
 #Create input for tree algorithm
-haplotypes = {}
+#haplotypes = {}
 
 #Randomly assign phase for each sample
-for i in GT:    
-    a=''
-    b=''
-    for j in i:
-        x=j[0]
-        y=j[-1]
-        rand = random.randrange(0,2)
-        if rand == 0:
-            a+=x
-            b+=y
-        else:
-            a+=y
-            b+=x
+#for i in GT:    
+#    a=''
+#    b=''
+#    for j in i:
+#        x=j[0]
+#        y=j[-1]
+#        rand = random.randrange(0,2)
+#        if rand == 0:
+#            a+=x
+#            b+=y
+#        else:
+#            a+=y
+#            b+=x
     
-    if a in haplotypes:
-        haplotypes[a] += 1
-    else:
-        haplotypes[a] = 1
+#    if a in haplotypes:
+#        haplotypes[a] += 1
+#    else:
+#        haplotypes[a] = 1
 
-    if b in haplotypes:
-        haplotypes[b] += 1
-    else:
-        haplotypes[b] = 1
+#    if b in haplotypes:
+#        haplotypes[b] += 1
+#    else:
+#        haplotypes[b] = 1
 
+#cPickle.dump(haplotypes, open("/Users/mp18/Documents/bloch/Data/g5haplotypes","w"))
+
+
+haplotypes = cPickle.load(open("/Users/mp18/Documents/bloch/Data/g5haplotypes"))
+
+first = list(itertools.islice(haplotypes.iteritems(),1))
+hlength= len(first[0][0]) -1
 
 #Haplotype length
-hlength = len(a)-1
+#hlength = len(a)-1
 iterations = 1
 r=1
 #m has to be an odd number
@@ -652,9 +664,10 @@ m=1
 #Input into tree algorithm
 
 T = treealgorithm(haplotypes)
-nx.write_gpickle(T[0], "/Users/mp18/Documents/bloch/Data/T[0]")
 
-cPickle.dump(T[1], open("/Users/mp18/Documents/bloch/Data/T[1]","w"))
+#nx.write_gpickle(T[0], "/Users/mp18/Documents/bloch/Data/T[0]")
+
+#cPickle.dump(T[1], open("/Users/mp18/Documents/bloch/Data/T[1]","w"))
 
 
 #phased=[]
