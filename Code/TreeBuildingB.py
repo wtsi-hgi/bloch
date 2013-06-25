@@ -593,53 +593,46 @@ def treesequence(haplotypes,r):
     return haplotypes
 
 #Extract genotypes from data
-#with open('/Users/mp18/Documents/bloch/Data/genotype5.txt', 'rb') as f:
-#    reader = csv.reader(f, delimiter='\t',skipinitialspace = True)
-#    #Create list of tuples which contain genotypes of each individual
-#    GT = zip(*reader)
+with open('/Users/mp18/Documents/bloch/Data/genotype_3.txt', 'rb') as f:
+    reader = csv.reader(f, delimiter='\t',skipinitialspace = True)
+    #Create list of tuples which contain genotypes of each individual
+    GT = zip(*reader)
 
-#f.close()
+f.close()
 #Remove first tuple of position names
-#del GT[0]
+del GT[0]
 
 #Create input for tree algorithm
-#haplotypes = {}
+haplotypes = {}
 
 #Randomly assign phase for each sample
-#for i in GT:    
-#    a=''
-#    b=''
-#    for j in i:
-#        x=j[0]
-#        y=j[-1]
-#        rand = random.randrange(0,2)
-#        if rand == 0:
-#            a+=x
-#            b+=y
-#        else:
-#            a+=y
-#            b+=x
+for i in GT:    
+    a=''
+    b=''
+    for j in i:
+        x=j[0]
+        y=j[-1]
+        rand = random.randrange(0,2)
+        if rand == 0:
+            a+=x
+            b+=y
+        else:
+            a+=y
+            b+=x
     
-#    if a in haplotypes:
-#        haplotypes[a] += 1
-#    else:
-#        haplotypes[a] = 1
+    if a in haplotypes:
+        haplotypes[a] += 1
+    else:
+        haplotypes[a] = 1
 
-#    if b in haplotypes:
-#        haplotypes[b] += 1
-#    else:
-#        haplotypes[b] = 1
+    if b in haplotypes:
+        haplotypes[b] += 1
+    else:
+        haplotypes[b] = 1
 
-#cPickle.dump(haplotypes, open("/Users/mp18/Documents/bloch/Data/g5haplotypes","w"))
-
-
-haplotypes = cPickle.load(open("/Users/mp18/Documents/bloch/Data/g5haplotypes"))
-
-first = list(itertools.islice(haplotypes.iteritems(),1))
-hlength= len(first[0][0]) -1
 
 #Haplotype length
-#hlength = len(a)-1
+hlength = len(a)-1
 iterations = 1
 r=1
 #m has to be an odd number
@@ -665,9 +658,9 @@ m=1
 
 T = treealgorithm(haplotypes)
 
-#nx.write_gpickle(T[0], "/Users/mp18/Documents/bloch/Data/T[0]")
+nx.write_gpickle(T[0], "/Users/mp18/Documents/bloch/Data/g3_T[0]")
 
-#cPickle.dump(T[1], open("/Users/mp18/Documents/bloch/Data/T[1]","w"))
+cPickle.dump(T[1], open("/Users/mp18/Documents/bloch/Data/g3_T[1]","w"))
 
 
 #phased=[]

@@ -7,7 +7,7 @@ haplotype = []
 frequency = []
 
 #Open data file in read mode
-with open('/Users/mp18/Documents/bloch/Data/Table_3', 'r') as f:
+with open('/Users/mp18/Documents/bloch/Data/Table_1', 'r') as f:
     data = f.read()
     
 #Close file
@@ -68,10 +68,16 @@ while allzero(frequency) == False:
             l4 += '\t'
             s=1
         elif s==1:
-            l1 += '|'
-            l2 += '|'
-            l3 += '|'
-            l4 += '|'            
+            r = random.randint(0,2)
+            if r == 0:
+                m = '|'
+            else:
+                m = '/'
+            
+            l1 += m
+            l2 += m
+            l3 += m
+            l4 += m            
             s=0
 
         
@@ -87,7 +93,7 @@ l2 += '\n'
 l3 += '\n'
 l4 += '\n'
 
-f = open('/Users/mp18/Documents/bloch/Data/Table_1', 'w')
+f = open('/Users/mp18/Documents/bloch/Data/genotype_2.txt', 'w')
 f.write(l1)
 f.write(l2)
 f.write(l3)

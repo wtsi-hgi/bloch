@@ -20,6 +20,7 @@ import math
 import sys
 import pickle
 import cPickle
+import string
         
 class HMM:
     def __init__(self, T, gt):
@@ -116,8 +117,7 @@ def treealgorithm(h):
                     G.edge[u][v][k]['weight'] += value
                     #Add haplotype suffix and value to dictionary of connecting node
                     G.node[v]['hap'][key[1:]]=value
-                    break
-           
+                    break           
                 
             #If there does not exist an edge.
             else:
@@ -139,8 +139,7 @@ def treealgorithm(h):
 
 
     #Functinon tests if two nodes are similar enough to merge. Returns similarity score or false.
-    def mergetest(a,b):
-        
+    def mergetest(a,b):        
         if G.node[a]['level'] != G.node[b]['level']:
             raise ValueError('Nodes to tested are not on the same level')
         
@@ -587,26 +586,50 @@ def treesequence(haplotypes,r):
                 haplotypes[j] = 1
     return haplotypes
 
+#Create empty list of allele frequencies
+allelefreq=[]
+
 #Extract genotypes from data
-with open('/Users/mp18/Documents/bloch/Data/genotype5.txt', 'rb') as f:
-    reader = csv.reader(f, delimiter='\t',skipinitialspace = True)
-    #Create list of tuples which contain genotypes of each individual
-    GT = zip(*reader)
+f = open('/Users/mp18/Documents/bloch/Data/genotype_1.txt', 'rb')
+for line in f:
+    dic={}
+    l,r= line.split('\t',1)
+
+    for i in '0123456789':
+        if r.count(i) > 0:
+            dic[i] = r.count(i)
+            
+    allelefreq.append(dic)
+
+#Move current position to beginning of the file
+f.seek(0,0)
+reader = csv.reader(f, delimiter='\t',skipinitialspace = True)        
+#Create list of tuples which contain genotypes of each individual
+GT = zip(*reader)
 
 f.close()
+
+print allelefreq
+
 #Remove first tuple of position names
 del GT[0]
+
+#Haplotype length
+hlength=len(GT[0])-1
 
 #Create input for tree algorithm
 haplotypes = {}
 
 #Randomly assign phase for each sample
-for i in GT:    
+#Iterate through each sample
+for i in GT:
     a=''
     b=''
-    for j in i:
-        x=j[0]
-        y=j[-1]
+    #Iterate through each genotype at each marker
+    for j, k in enumerate(i):               
+        x=k[0]
+        y=k[-1]
+
         rand = random.randrange(0,2)
         if rand == 0:
             a+=x
@@ -614,7 +637,8 @@ for i in GT:
         else:
             a+=y
             b+=x
-    
+
+    #Create list of haplotypes and counts to build tree with.        
     if a in haplotypes:
         haplotypes[a] += 1
     else:
@@ -626,8 +650,6 @@ for i in GT:
         haplotypes[b] = 1
 
 
-#Haplotype length
-hlength = len(a)-1
 iterations = 1
 r=1
 #m has to be an odd number
@@ -652,9 +674,9 @@ m=1
 #Input into tree algorithm
 
 T = treealgorithm(haplotypes)
-nx.write_gpickle(T[0], "/Users/mp18/Documents/bloch/Data/T[0]")
+#nx.write_gpickle(T[0], "/Users/mp18/Documents/bloch/Data/T[0]")
 
-cPickle.dump(T[1], open("/Users/mp18/Documents/bloch/Data/T[1]","w"))
+#cPickle.dump(T[1], open("/Users/mp18/Documents/bloch/Data/T[1]","w"))
 
 
 #phased=[]
