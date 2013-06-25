@@ -42,14 +42,20 @@ class HMM:
     def emission(self, i,s):
         #If one allele is unknown. If known allele is contained in s then 1 is returned.
         if self.gt[i].count('.') == 1:
-            for i in self.gt[i]:
-                if (i == "|") or (i == "\\"):
-                    continue
-                if i != '.':
-                    if i in s:
-                        return 1
-                    else:
-                        return 0
+            x = self.gt[i][0]
+            y = self.gt[i][-1]
+
+            if x == '.':
+                if y in s:
+                    return 1
+                else:
+                    return 0
+            else:
+                if x in s:
+                    return 1
+                else:
+                    return 0
+    
                 
         #If both alleles are unknown 1 is returned
         elif self.gt[i].count('.') == 2:        
@@ -377,7 +383,6 @@ def treealgorithm(h):
     return (G, gnodes)
 
 def forwardbackward(T, gt):
-       
     fb = HMM(T, gt)
 
     #Create n the list of the number of edges in each level
@@ -395,11 +400,12 @@ def forwardbackward(T, gt):
         
         #Append zero-filled matrix to list m
         m.append(np.zeros(shape=(n[i+1],n[i+1])))
+    
 
     
     #Initiation. Iterate through pairs of outgoing edges from node 1.
     for a, b in itertools.product([(i, j) for i, j in enumerate(T[0].out_edges(1, keys=True, data=True))], repeat=2):
-        
+
         #If emmsion probability does not equal 0
         if fb.emission(0,(a[1][3]['a'],b[1][3]['a'])) != 0:              
             if a[1] == b[1]:
@@ -407,11 +413,10 @@ def forwardbackward(T, gt):
                 var = t*t            
             else:
                 var = fb.dipinitial(a[1][3]['a'], b[1][3]['a'])
-
+            
             #Matrix element is set to calculated diploid initial probability
             m[0][a[0]][b[0]] = var
-
-
+    
     #Induction. Iterate through each level
     for i in range(1,hlength+1):
 
@@ -427,6 +432,7 @@ def forwardbackward(T, gt):
                 m[i][a[0]][b[0]] = var
 
 
+
     #Backwards sampling
 
 
@@ -437,7 +443,7 @@ def forwardbackward(T, gt):
     p = [0]*(hlength+1)
     #Randomly choose first element in m[3] according to initial probabilities
     s[hlength] = random_weighted_choice(m[hlength].flatten())
-    
+
 
     #Set probability of the chosen position
     p[hlength] = m[hlength].flatten()[s[hlength]]
@@ -449,6 +455,7 @@ def forwardbackward(T, gt):
         #Set e to equal the edge description of edges sampled
 
         e = fb.findedge(s[i], i, n[i])
+        
 
         #For each position in forward probability matrix of level below, calculate sampling probabilities
         for b, j in enumerate(m[i-1].flat):
@@ -457,6 +464,7 @@ def forwardbackward(T, gt):
 
         #Choose next sampled edge based on calculated probabilities
         s[i-1] = random_weighted_choice(prob)
+        
 
         #Record probability of chosen edges.
         p[i-1] = prob[s[i-1]]
@@ -570,9 +578,15 @@ def treesequence(haplotypes,r):
     
     #Input into tree algorithm
     T = treealgorithm(haplotypes)
+    print "Tree Built"
+    for i in T[0].nodes(data=True):
+        print i
+    for i in T[0].edges(data=True, keys=True):
+        print i
+    print T[1]
        
     haplotypes={}
-    for i in GT:        
+    for i in GT:
         if r == 1:
             i = i[::-1]
                     
@@ -614,8 +628,7 @@ GT = zip(*reader)
 
 f.close()
 
-print allelefreq
-print alleles
+
 #Remove first tuple of position names
 del GT[0]
 
@@ -628,7 +641,6 @@ haplotypes = {}
 #Randomly assign phase for each sample
 #Iterate through each sample
 for i in GT:
-
     a=''
     b=''
     #Iterate through each genotype at each marker
@@ -678,7 +690,7 @@ r=1
 #m has to be an odd number
 m=1
 
-#haplotypes = treesequence(haplotypes, 0)
+haplotypes = treesequence(haplotypes, 0)
 #sys.stdout.write(str(m)+" iterations altogether\n1\n")
 
 
@@ -696,7 +708,7 @@ m=1
 
 #Input into tree algorithm
 
-T = treealgorithm(haplotypes)
+#T = treealgorithm(haplotypes)
 #nx.write_gpickle(T[0], "/Users/mp18/Documents/bloch/Data/T[0]")
 
 #cPickle.dump(T[1], open("/Users/mp18/Documents/bloch/Data/T[1]","w"))
