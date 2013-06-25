@@ -21,13 +21,25 @@ import sys
 import pickle
 import cPickle
 import string
-        
+import functools
+
+def memoize(obj):
+    cache = obj.cache = {}
+
+    @functools.wraps(obj)
+    def memoizer(*args, **kwargs):
+        if args not in cache:
+            cache[args] = obj(*args, **kwargs)
+        return cache[args]
+    return memoizer
+    
 class HMM:
     def __init__(self, T, gt):
         self.T = T
         self.gt = gt
         
     #Haploid initial state probabilities. allele: allele number.
+    @memoize
     def hapinitial(self, allele):
         #Edge counts are used. Count of edge/Total count for all edges.
         for i in self.T[0].out_edges(1, data=True):        
@@ -39,6 +51,7 @@ class HMM:
         return float(self.hapinitial(a))*float(self.hapinitial(b))
 
     #Emission state probabilities. gt: genotype. i: level. s: tuple of alleles.
+    @memoize
     def emission(self, i,s):
         #If one allele is unknown. If known allele is contained in s then 1 is returned.
         if self.gt[i].count('.') == 1:
@@ -69,7 +82,8 @@ class HMM:
                 return 0
 
     #Transition state probabilities. e,d: edge tuples incl data
-    def haptrans(self, (e,d)):
+    
+    def haptrans(self, e,d):
         #If parent node of edge e is child node of edge d.
         if e[0] == d[1]:
 
@@ -80,7 +94,7 @@ class HMM:
 
     #Diploid transition probabilities
     def diptrans(self, a,b):
-        return float(self.haptrans(a))*float(self.haptrans(b))
+        return float(self.haptrans(a[0], a[1]))*float(self.haptrans(b[0], b[1]))
 
     #Function to find edge corresponding to matrix coordinate. g=flattened index. l=level(index of m), e = number of edges
     def findedge(self,g,l,e):
@@ -384,6 +398,7 @@ def treealgorithm(h):
 
 def forwardbackward(T, gt):
     fb = HMM(T, gt)
+   
 
     #Create n the list of the number of edges in each level
     n = [T[0].out_degree(1)]
@@ -399,8 +414,7 @@ def forwardbackward(T, gt):
             n[i+1] += T[0].out_degree(j)
         
         #Append zero-filled matrix to list m
-        m.append(np.zeros(shape=(n[i+1],n[i+1])))
-    
+        m.append(np.zeros(shape=(n[i+1],n[i+1])))    
 
     
     #Initiation. Iterate through pairs of outgoing edges from node 1.
@@ -419,7 +433,6 @@ def forwardbackward(T, gt):
     
     #Induction. Iterate through each level
     for i in range(1,hlength+1):
-
         #Iterate through ordered pairs of outgoing edges in each level
         for a, b in itertools.product([(c, d) for c, d in enumerate(T[0].out_edges(nbunch=T[1][i], keys=True, data=True))], repeat=2):
             
@@ -432,9 +445,7 @@ def forwardbackward(T, gt):
                 m[i][a[0]][b[0]] = var
 
 
-
     #Backwards sampling
-
 
     #List of  flattened indices chosen from sampling 
     s = [0]*(hlength+1)
@@ -691,6 +702,8 @@ r=1
 m=1
 
 haplotypes = treesequence(haplotypes, 0)
+print haplotypes
+
 #sys.stdout.write(str(m)+" iterations altogether\n1\n")
 
 
@@ -709,9 +722,9 @@ haplotypes = treesequence(haplotypes, 0)
 #Input into tree algorithm
 
 #T = treealgorithm(haplotypes)
-#nx.write_gpickle(T[0], "/Users/mp18/Documents/bloch/Data/T[0]")
+#nx.write_gpickle(T[0], "/Users/mp18/Documents/bloch/Data/g2_T[0]")
 
-#cPickle.dump(T[1], open("/Users/mp18/Documents/bloch/Data/T[1]","w"))
+#cPickle.dump(T[1], open("/Users/mp18/Documents/bloch/Data/g2_T[1]","w"))
 
 
 #phased=[]
