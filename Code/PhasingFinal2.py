@@ -592,10 +592,8 @@ alleles=[]
 
 #Extract genotypes from data
 f = open('/Users/mp18/Documents/bloch/Data/genotype_2.txt', 'rb')
-for line in f:
-    
-    af = []
-    
+for line in f:    
+    af = []    
     al= []
     
     l,r= line.split('\t',1)
@@ -640,8 +638,13 @@ for i in GT:
         y=k[-1]
         z=k[1]
 
-
+        #If allele is unknown, it is randomly imputed based on allele frequencies.
+        if x == '.':
+            x = alleles[j][random_weighted_choice(allelefreq[j])]
+        if y == '.':
+            y = alleles[j][random_weighted_choice(allelefreq[j])]
             
+
         #Unphased data is randomly phased
         if z == '/':    
             rand = random.randrange(0,2)
@@ -669,7 +672,6 @@ for i in GT:
         haplotypes[b] += 1
     else:
         haplotypes[b] = 1
-
 
 iterations = 1
 r=1
