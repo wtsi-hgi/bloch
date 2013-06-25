@@ -96,10 +96,17 @@ class HMM:
                 f[1] = b
 
         if -1 in f:
-            print 'Error in findedge'
+            raise InputError('Error in findedge')
         else:
 
             return f
+
+def random_weighted_choice(weights):
+    rnd = random.random() * sum(weights)
+    for i, w in enumerate(weights):
+        rnd -= w
+        if rnd < 0:
+            return i
         
 def treealgorithm(h):
 
@@ -370,14 +377,7 @@ def treealgorithm(h):
     return (G, gnodes)
 
 def forwardbackward(T, gt):
-
-    def random_weighted_choice(weights):
-        rnd = random.random() * sum(weights)
-        for i, w in enumerate(weights):
-            rnd -= w
-            if rnd < 0:
-                return i
-        
+       
     fb = HMM(T, gt)
 
     #Create n the list of the number of edges in each level
@@ -588,18 +588,25 @@ def treesequence(haplotypes,r):
 
 #Create empty list of allele frequencies
 allelefreq=[]
+alleles=[]
 
 #Extract genotypes from data
-f = open('/Users/mp18/Documents/bloch/Data/genotype_1.txt', 'rb')
+f = open('/Users/mp18/Documents/bloch/Data/genotype_2.txt', 'rb')
 for line in f:
-    dic={}
+    
+    af = []
+    
+    al= []
+    
     l,r= line.split('\t',1)
 
     for i in '0123456789':
         if r.count(i) > 0:
-            dic[i] = r.count(i)
+            af.append(r.count(i))
+            al.append(i)
             
-    allelefreq.append(dic)
+    allelefreq.append(af)
+    alleles.append(al)
 
 #Move current position to beginning of the file
 f.seek(0,0)
@@ -610,7 +617,7 @@ GT = zip(*reader)
 f.close()
 
 print allelefreq
-
+print alleles
 #Remove first tuple of position names
 del GT[0]
 
@@ -623,20 +630,34 @@ haplotypes = {}
 #Randomly assign phase for each sample
 #Iterate through each sample
 for i in GT:
+
     a=''
     b=''
     #Iterate through each genotype at each marker
-    for j, k in enumerate(i):               
+    for j, k in enumerate(i):
+                
         x=k[0]
         y=k[-1]
+        z=k[1]
 
-        rand = random.randrange(0,2)
-        if rand == 0:
-            a+=x
-            b+=y
-        else:
+
+            
+        #Unphased data is randomly phased
+        if z == '/':    
+            rand = random.randrange(0,2)
+            if rand == 0:
+                a+=x
+                b+=y
+            else:
+                a+=y
+                b+=x
+        #Phased data is put in corresponding haplotype
+        elif z == '|':
             a+=y
             b+=x
+        else:
+            raise ValueError('Data: symbol is not | or \\')
+            
 
     #Create list of haplotypes and counts to build tree with.        
     if a in haplotypes:
