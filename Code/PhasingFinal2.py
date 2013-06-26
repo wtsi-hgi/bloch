@@ -345,9 +345,11 @@ def treealgorithm(h):
                     if k[i] == 1:
                         continue
                     else:
-                        if i <= mnodes[0]:
+                        if i == mnodes[0]:
+                            continue
+                        elif i < mnodes[0]:
                             simmatrix[i][mnodes[0]] = mergetest(nlist[i],nlist[mnodes[0]])
-                        elif i > mnodes[1]:
+                        elif i > mnodes[0]:
                             simmatrix[mnodes[0]][i] = mergetest(nlist[mnodes[0]],nlist[i])    
         
     gnodes = []
@@ -608,21 +610,21 @@ allelefreq=[]
 alleles=[]
 
 #Extract genotypes from data
-f = open('/Users/mp18/Documents/bloch/Data/genotype_12.txt', 'rb')
-for line in f:    
-    af = []    
-    al= []
-    
+f = open('/Users/mp18/Documents/bloch/Data/genotype_14.txt', 'rb')
+for line in f:
+    dic = {}   
     l,r= line.split('\t',1)
-
-    for i in '0123456789':
-        if r.count(i) > 0:
-            af.append(r.count(i))
-            al.append(i)
-            
-    allelefreq.append(af)
-    alleles.append(al)
-
+    for i in r:
+        if i in ('|','.','/','\t','\n'):
+            continue
+        else:
+            if i in dic:
+                dic[i] += 1
+            else:
+                dic[i] = 1
+    alleles.append(dic.keys())
+    allelefreq.append(dic.values())
+    
 #Move current position to beginning of the file
 f.seek(0,0)
 reader = csv.reader(f, delimiter='\t',skipinitialspace = True)        
@@ -630,7 +632,6 @@ reader = csv.reader(f, delimiter='\t',skipinitialspace = True)
 GT = zip(*reader)
 
 f.close()
-
 
 #Remove first tuple of position names
 del GT[0]
@@ -647,8 +648,7 @@ for i in GT:
     a=''
     b=''
     #Iterate through each genotype at each marker
-    for j, k in enumerate(i):
-                
+    for j, k in enumerate(i):                
         x=k[0]
         y=k[-1]
         z=k[1]
@@ -711,9 +711,9 @@ m=1
 #Input into tree algorithm
 
 T = treealgorithm(haplotypes)
-nx.write_gpickle(T[0], "/Users/mp18/Documents/bloch/Data/SerialisedTrees/g12_T[0]")
-cPickle.dump(T[1], open("/Users/mp18/Documents/bloch/Data/SerialisedTrees/g12_T[1]","w"))
-cPickle.dump(GT, open("/Users/mp18/Documents/bloch/Data/SerialisedTrees/g12_GT","w"))
+nx.write_gpickle(T[0], "/Users/mp18/Documents/bloch/Data/SerialisedTrees/g14_T[0]")
+cPickle.dump(T[1], open("/Users/mp18/Documents/bloch/Data/SerialisedTrees/g14_T[1]","w"))
+cPickle.dump(GT, open("/Users/mp18/Documents/bloch/Data/SerialisedTrees/g14_GT","w"))
 
 
 #phased=[]
