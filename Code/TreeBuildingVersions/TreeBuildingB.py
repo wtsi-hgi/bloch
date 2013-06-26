@@ -20,26 +20,13 @@ import math
 import sys
 import pickle
 import cPickle
-import string
-import functools
-
-def memoize(obj):
-    cache = obj.cache = {}
-
-    @functools.wraps(obj)
-    def memoizer(*args, **kwargs):
-        if args not in cache:
-            cache[args] = obj(*args, **kwargs)
-        return cache[args]
-    return memoizer
-    
+        
 class HMM:
     def __init__(self, T, gt):
         self.T = T
         self.gt = gt
         
     #Haploid initial state probabilities. allele: allele number.
-    @memoize
     def hapinitial(self, allele):
         #Edge counts are used. Count of edge/Total count for all edges.
         for i in self.T[0].out_edges(1, data=True):        
@@ -51,23 +38,17 @@ class HMM:
         return float(self.hapinitial(a))*float(self.hapinitial(b))
 
     #Emission state probabilities. gt: genotype. i: level. s: tuple of alleles.
-    @memoize
     def emission(self, i,s):
         #If one allele is unknown. If known allele is contained in s then 1 is returned.
         if self.gt[i].count('.') == 1:
-            x = self.gt[i][0]
-            y = self.gt[i][-1]
-
-            if x == '.':
-                if y in s:
-                    return 1
-                else:
-                    return 0
-            else:
-                if x in s:
-                    return 1
-                else:
-                    return 0    
+            for i in self.gt[i]:
+                if (i == "|") or (i == "\\"):
+                    continue
+                if i != '.':
+                    if i in s:
+                        return 1
+                    else:
+                        return 0
                 
         #If both alleles are unknown 1 is returned
         elif self.gt[i].count('.') == 2:        
@@ -81,18 +62,18 @@ class HMM:
                 return 0
 
     #Transition state probabilities. e,d: edge tuples incl data
-    @memoize
-    def haptrans(self,(p,c,w)):
+    def haptrans(self, (e,d)):
         #If parent node of edge e is child node of edge d.
-        if p == c:
+        if e[0] == d[1]:
+
             #Edge count/parent node count is returned            
-            return float(w)/float(self.T[0].node[p]['weight']) 
+            return float(e[3]['weight'])/float(self.T[0].node[e[0]]['weight']) 
         else:
             return 0.0
 
     #Diploid transition probabilities
-    def diptrans(self, a, b):
-        return float(self.haptrans(a)*float(self.haptrans(b)))
+    def diptrans(self, a,b):
+        return float(self.haptrans(a))*float(self.haptrans(b))
 
     #Function to find edge corresponding to matrix coordinate. g=flattened index. l=level(index of m), e = number of edges
     def findedge(self,g,l,e):
@@ -114,17 +95,10 @@ class HMM:
                 f[1] = b
 
         if -1 in f:
-            raise InputError('Error in findedge')
+            print 'Error in findedge'
         else:
 
             return f
-
-def random_weighted_choice(weights):
-    rnd = random.random() * sum(weights)
-    for i, w in enumerate(weights):
-        rnd -= w
-        if rnd < 0:
-            return i
         
 def treealgorithm(h):
 
@@ -142,7 +116,8 @@ def treealgorithm(h):
                     G.edge[u][v][k]['weight'] += value
                     #Add haplotype suffix and value to dictionary of connecting node
                     G.node[v]['hap'][key[1:]]=value
-                    break           
+                    break
+           
                 
             #If there does not exist an edge.
             else:
@@ -164,7 +139,8 @@ def treealgorithm(h):
 
 
     #Functinon tests if two nodes are similar enough to merge. Returns similarity score or false.
-    def mergetest(a,b):        
+    def mergetest(a,b):
+        
         if G.node[a]['level'] != G.node[b]['level']:
             raise ValueError('Nodes to tested are not on the same level')
         
@@ -257,6 +233,7 @@ def treealgorithm(h):
 
     #Function merges 2 nodes. a should always be < b
     def mergenodes(a,b):
+        
         if G.node[a]['level'] != G.node[b]['level']:
             raise ValueError('Nodes to merged are not on the same level')        
   
@@ -315,7 +292,7 @@ def treealgorithm(h):
             simmatrix = np.zeros((n,n))
 
             #Calculate values in half of matrix
-            for a, b in itertools.combinations(enumerate(gnodes[l]), 2):
+            for a, b in itertools.combinations(enumerate(nlist), 2):
                  simmatrix[a[0],b[0]] = mergetest(a[1],b[1])
              
             #While some values in matrix are not equal to zero
@@ -336,18 +313,20 @@ def treealgorithm(h):
                 #Set all matrix positions of deleted node to 0
                 for i in range(len(k)):
                     if i <= mnodes[1]:
-                        simmatrix[i][mnodes[1]] = 0
-                    elif i > mnodes[1]:
-                        simmatrix[mnodes[1]][i] = 0
+                        simmatrix[i][mnodes[1]] = 0.0
+                    elif i >= mnodes[1]:
+                        simmatrix[mnodes[1]][i] = 0.0
                                       
                 #Recalculate similarity score for changed node
                 for i in range(len(k)):
                     if k[i] == 1:
                         continue
                     else:
-                        if i <= mnodes[0]:
+                        if i == mnodes[0]:
+                            continue
+                        elif i < mnodes[0]:
                             simmatrix[i][mnodes[0]] = mergetest(nlist[i],nlist[mnodes[0]])
-                        elif i > mnodes[1]:
+                        elif i > mnodes[0]:
                             simmatrix[mnodes[0]][i] = mergetest(nlist[mnodes[0]],nlist[i])    
         
     gnodes = []
@@ -374,11 +353,13 @@ def treealgorithm(h):
 
     #Set endnode as first node in last level
     endnode = max(gnodes[-2]) +1
-
+    
     #Iterate through all nodes on penultimate level
     for i in gnodes[-2]:
+        
         for key, value in G.node[i]['hap'].iteritems():
             G.add_edge(i,endnode,a=key,weight=value)
+            
         G.add_node(i, weight=sum(G.node[i]['hap'].values()))
         del G.node[i]['hap']
 
@@ -395,8 +376,15 @@ def treealgorithm(h):
     return (G, gnodes)
 
 def forwardbackward(T, gt):
+
+    def random_weighted_choice(weights):
+        rnd = random.random() * sum(weights)
+        for i, w in enumerate(weights):
+            rnd -= w
+            if rnd < 0:
+                return i
+        
     fb = HMM(T, gt)
-   
 
     #Create n the list of the number of edges in each level
     n = [T[0].out_degree(1)]
@@ -412,12 +400,12 @@ def forwardbackward(T, gt):
             n[i+1] += T[0].out_degree(j)
         
         #Append zero-filled matrix to list m
-        m.append(np.zeros(shape=(n[i+1],n[i+1])))    
+        m.append(np.zeros(shape=(n[i+1],n[i+1])))
 
     
     #Initiation. Iterate through pairs of outgoing edges from node 1.
     for a, b in itertools.product([(i, j) for i, j in enumerate(T[0].out_edges(1, keys=True, data=True))], repeat=2):
-
+        
         #If emmsion probability does not equal 0
         if fb.emission(0,(a[1][3]['a'],b[1][3]['a'])) != 0:              
             if a[1] == b[1]:
@@ -425,25 +413,28 @@ def forwardbackward(T, gt):
                 var = t*t            
             else:
                 var = fb.dipinitial(a[1][3]['a'], b[1][3]['a'])
-            
+
             #Matrix element is set to calculated diploid initial probability
             m[0][a[0]][b[0]] = var
-    
+
+
     #Induction. Iterate through each level
     for i in range(1,hlength+1):
+
         #Iterate through ordered pairs of outgoing edges in each level
         for a, b in itertools.product([(c, d) for c, d in enumerate(T[0].out_edges(nbunch=T[1][i], keys=True, data=True))], repeat=2):
             
             #If emission probability does not equal 0
             if fb.emission(i,(a[1][3]['a'],b[1][3]['a'])) != 0.0:
 
-                var = sum([(m[i-1][c[0]][d[0]]*fb.diptrans((a[1][0],c[1][1],a[1][3]['weight']),(b[1][0],d[1][1],b[1][3]['weight']))) for c, d  in itertools.product([(e, f) for e, f in enumerate(T[0].out_edges(nbunch=T[1][i-1], keys=True, data=True))], repeat=2)])
+                var = sum([(m[i-1][c[0]][d[0]]*fb.diptrans([a[1],c[1]], [b[1],d[1]])) for c, d  in itertools.product([(e, f) for e, f in enumerate(T[0].out_edges(nbunch=T[1][i-1], keys=True, data=True))], repeat=2)])
                
                 #Matrix element is set to var calculation formula
                 m[i][a[0]][b[0]] = var
 
 
     #Backwards sampling
+
 
     #List of  flattened indices chosen from sampling 
     s = [0]*(hlength+1)
@@ -452,7 +443,7 @@ def forwardbackward(T, gt):
     p = [0]*(hlength+1)
     #Randomly choose first element in m[3] according to initial probabilities
     s[hlength] = random_weighted_choice(m[hlength].flatten())
-
+    
 
     #Set probability of the chosen position
     p[hlength] = m[hlength].flatten()[s[hlength]]
@@ -464,16 +455,14 @@ def forwardbackward(T, gt):
         #Set e to equal the edge description of edges sampled
 
         e = fb.findedge(s[i], i, n[i])
-        
 
         #For each position in forward probability matrix of level below, calculate sampling probabilities
         for b, j in enumerate(m[i-1].flat):
             d = fb.findedge(b, i-1, n[i-1])
-            prob.append((fb.emission(i,(e[0][3]['a'],e[1][3]['a']))*fb.diptrans((e[0][0],d[0][1],e[0][3]['weight']),(e[1][0],d[1][1],e[1][3]['weight']))*j)/m[i].flat[s[i]])
+            prob.append((fb.emission(i,(e[0][3]['a'],e[1][3]['a']))*fb.diptrans((e[0],d[0]),(e[1],d[1]))*j)/m[i].flat[s[i]])
 
         #Choose next sampled edge based on calculated probabilities
         s[i-1] = random_weighted_choice(prob)
-        
 
         #Record probability of chosen edges.
         p[i-1] = prob[s[i-1]]
@@ -587,9 +576,9 @@ def treesequence(haplotypes,r):
     
     #Input into tree algorithm
     T = treealgorithm(haplotypes)
-      
+       
     haplotypes={}
-    for i in GT:
+    for i in GT:        
         if r == 1:
             i = i[::-1]
                     
@@ -603,79 +592,34 @@ def treesequence(haplotypes,r):
                 haplotypes[j] = 1
     return haplotypes
 
-#Create empty list of allele frequencies
-allelefreq=[]
-alleles=[]
-
 #Extract genotypes from data
-f = open('/Users/mp18/Documents/bloch/Data/genotype_12.txt', 'rb')
-for line in f:    
-    af = []    
-    al= []
-    
-    l,r= line.split('\t',1)
-
-    for i in '0123456789':
-        if r.count(i) > 0:
-            af.append(r.count(i))
-            al.append(i)
-            
-    allelefreq.append(af)
-    alleles.append(al)
-
-#Move current position to beginning of the file
-f.seek(0,0)
-reader = csv.reader(f, delimiter='\t',skipinitialspace = True)        
-#Create list of tuples which contain genotypes of each individual
-GT = zip(*reader)
+with open('/Users/mp18/Documents/bloch/Data/genotype_3.txt', 'rb') as f:
+    reader = csv.reader(f, delimiter='\t',skipinitialspace = True)
+    #Create list of tuples which contain genotypes of each individual
+    GT = zip(*reader)
 
 f.close()
-
-
 #Remove first tuple of position names
 del GT[0]
-
-#Haplotype length
-hlength=len(GT[0])-1
 
 #Create input for tree algorithm
 haplotypes = {}
 
 #Randomly assign phase for each sample
-#Iterate through each sample
-for i in GT:
+for i in GT:    
     a=''
     b=''
-    #Iterate through each genotype at each marker
-    for j, k in enumerate(i):
-                
-        x=k[0]
-        y=k[-1]
-        z=k[1]
-
-        #If allele is unknown, it is randomly imputed based on allele frequencies.
-        if x == '.':
-            x = alleles[j][random_weighted_choice(allelefreq[j])]
-        if y == '.':
-            y = alleles[j][random_weighted_choice(allelefreq[j])]            
-
-        #Unphased data is randomly phased
-        if z == '/':    
-            rand = random.randrange(0,2)
-            if rand == 0:
-                a+=x
-                b+=y
-            else:
-                a+=y
-                b+=x
-        #Phased data is put in corresponding haplotype
-        elif z == '|':
+    for j in i:
+        x=j[0]
+        y=j[-1]
+        rand = random.randrange(0,2)
+        if rand == 0:
+            a+=x
+            b+=y
+        else:
             a+=y
             b+=x
-        else:
-            raise ValueError('Data: symbol is not | or \\')            
-
-    #Create list of haplotypes and counts to build tree with.        
+    
     if a in haplotypes:
         haplotypes[a] += 1
     else:
@@ -686,13 +630,15 @@ for i in GT:
     else:
         haplotypes[b] = 1
 
+
+#Haplotype length
+hlength = len(a)-1
 iterations = 1
 r=1
 #m has to be an odd number
 m=1
 
 #haplotypes = treesequence(haplotypes, 0)
-
 #sys.stdout.write(str(m)+" iterations altogether\n1\n")
 
 
@@ -711,9 +657,10 @@ m=1
 #Input into tree algorithm
 
 T = treealgorithm(haplotypes)
-nx.write_gpickle(T[0], "/Users/mp18/Documents/bloch/Data/SerialisedTrees/g12_T[0]")
-cPickle.dump(T[1], open("/Users/mp18/Documents/bloch/Data/SerialisedTrees/g12_T[1]","w"))
-cPickle.dump(GT, open("/Users/mp18/Documents/bloch/Data/SerialisedTrees/g12_GT","w"))
+
+nx.write_gpickle(T[0], "/Users/mp18/Documents/bloch/Data/g3_T[0]")
+
+cPickle.dump(T[1], open("/Users/mp18/Documents/bloch/Data/g3_T[1]","w"))
 
 
 #phased=[]
