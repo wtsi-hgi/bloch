@@ -538,7 +538,8 @@ def viterbi(T, gt):
 
                 #Calculate maximum value and record which edges correspond.
                 for c, d  in itertools.product([(e, f) for e, f in enumerate(T[0].out_edges(nbunch=T[1][i-1], keys=True, data=True))], repeat=2):                    
-                    value = (v[i-1][c[0]][d[0]]*vi.diptrans([a[1],c[1]], [b[1],d[1]]))
+                    value = (v[i-1][c[0]][d[0]]*vi.diptrans((a[1][0],c[1][1],a[1][3]['weight']), (b[1][0],d[1][1],b[1][3]['weight'])))
+                    
                    
                     if max < value:
                         max = value                    
@@ -599,15 +600,29 @@ group.add_argument('-a','--all',dest='all_input', help='input file')
 group.add_argument('-t','--tree',dest='tree_input',help='input file for treebuilder')
 group.add_argument('-fb', '--forwardbackward',dest='fb_files',action='append',help='input files for forwardbackward')
 
-parser.add_argument('-o', '--output', help='output filename(s) prefix')
+parser.add_argument('-i', '--iterations',dest="m",default=9,type=int,choices=range(1,10,2),help='number of iterations of the fb algorithm. Must be odd number up to 9.')
+parser.add_argument('-o', '--output',dest="output", help='output filename(s) prefix')
 
 args = parser.parse_args()        
 filename = None
-
-if (args.tree_input != None):
-    filename = args.tree_input
+option = 0
+T=[0,0]
 if (args.all_input != None):
     filename = args.all_input
+    
+if (args.tree_input != None):
+    filename = args.tree_input
+    option = 1
+    
+if (args.fb_files != None):
+    if len(args.fb_files) == 3:
+        T[0] = args.fb_files[0]
+        T[1] = args.fb_files[1]
+        GT = args.fb_files[2]
+        option = 2
+    else:
+        ArgumentParser.error("3 filenames required for fb option")
+    
 
 if filename != None:
     #Create empty list of allele frequencies
@@ -635,7 +650,6 @@ if filename != None:
     reader = csv.reader(f, delimiter='\t',skipinitialspace = True)        
     #Create list of tuples which contain genotypes of each individual
     GT = zip(*reader)
-
     f.close()
 
     #Remove first tuple of position names
@@ -691,57 +705,75 @@ if filename != None:
         else:
             haplotypes[b] = 1
 
-iterations = 1
-r=1
-#m has to be an odd number
-m=1
 
-#haplotypes = treesequence(haplotypes, 0)
+#Option 1 is to produce first tree data and pickle
+if option == 1:
+    T = treealgorithm(haplotypes)
+    nx.write_gpickle(T[0], args.output +"_T[0]")
+    cPickle.dump(T[1], open(args.output + "_T[1]","w"))
+    cPickle.dump(GT, open(args.output + "_GT","w"))
 
-#sys.stdout.write(str(m)+" iterations altogether\n1\n")
+#Option 0 is to do all computation
+if option == 0:
+    iterations = 1
+    r=1
 
-
-#while iterations < m:
-#    sys.stdout.write(str(iterations+1)+"\n")    
+    sys.stdout.write(str(args.m)+" iterations altogether\n1\n")
+    haplotypes = treesequence(haplotypes, 0)
+    while iterations < args.m:
+        sys.stdout.write(str(iterations+1)+"\n")    
     
-#    haplotypes = reverseorder(haplotypes)
-#    haplotypes = treesequence(haplotypes,r)
-#    iterations += 1
-#    r += 1
-#    r = r%2
+        haplotypes = reverseorder(haplotypes)
+        haplotypes = treesequence(haplotypes,r)
+        iterations += 1
+        r += 1
+        r = r%2
 
-    #print "last haplotypes"
-    #print haplotypes
-
-#Input into tree algorithm
-
-T = treealgorithm(haplotypes)
-nx.write_gpickle(T[0], "/Users/mp18/Documents/bloch/Data/SerialisedTrees/g14_T[0]")
-cPickle.dump(T[1], open("/Users/mp18/Documents/bloch/Data/SerialisedTrees/g14_T[1]","w"))
-cPickle.dump(GT, open("/Users/mp18/Documents/bloch/Data/SerialisedTrees/g14_GT","w"))
-
-
-#phased=[]
-#correct = 0
-#incorrect = 0
-
-#for i in GT:
-#    result = viterbi(T, i)
+    T = treealgorithm(haplotypes)
     
-#    for j in range(len(result)):
+    phased=[]
+    correct = 0
+    incorrect = 0
+
+    for i in GT:
+        result = viterbi(T, i)
+    
+        for j in range(len(result)):
         
-#        if result[j][0] == i[j][0]:
-#            correct += 1
-#        else:
-#            incorrect += 1
+            if result[j][0] == i[j][0]:
+                correct += 1
+            else:
+                incorrect += 1
             
-#        if result[j][1] == i[j][-1]:
-#            correct += 1
-#        else:
-#            incorrect += 1
 
-            #g = open("output.txt", "w")
-            #g.write("Correct: "+ str(correct)+"\n")
-            #g.write("Incorrect: "+str(incorrect))
+            if result[j][1] == i[j][-1]:
+                correct += 1
+            else:
+                incorrect += 1
 
-            #g.close()
+    g = open(args.output+".txt", "w")
+    g.write("Correct: "+ str(correct)+"\n")
+    g.write("Incorrect: "+str(incorrect))
+    g.close()
+
+#Option 2 is to run fb algorithm once per genotype on to tree.
+if option == 2:
+    haplotypes={}
+    for i in GT:
+        
+        samples = forwardbackward(T,i)
+
+        for j in samples:
+
+            if j in haplotypes:
+                haplotypes[j] += 1
+            else:
+                haplotypes[j] = 1
+    cPickle.dump(haplotypes, open(args.output + "_haplotypes","w"))
+
+    
+
+
+
+
+
