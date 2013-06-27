@@ -22,6 +22,7 @@ import pickle
 import cPickle
 import string
 import functools
+import argparse
 
 def memoize(obj):
     cache = obj.cache = {}
@@ -195,22 +196,10 @@ def treealgorithm(h):
         q = [[1,1]]
     
         while len(q) != 0:
-            #print q
-            #Splits nodes subgraphs
+
             nodesplit(A,q[0][0],anodes)
             nodesplit(B,q[0][1],bnodes)
-
-            #print "Graph A"
-            #for i in A.nodes(data=True):
-            #    print i
-            #for i in A.edges(data=True, keys=True):
-            #    print i
-            #print "Graph B"
-            #for i in B.nodes(data=True):
-            #    print i
-            #for i in B.edges(data=True, keys=True):
-            #    print i                                
-            
+                                         
             da = dict((edata['a'],sum(A.node[v]['hap'].itervalues())) for u,v,edata in A.out_edges(q[0][0], data=True))
             db = dict((edata['a'],sum(B.node[v]['hap'].itervalues())) for u,v,edata in B.out_edges(q[0][1], data=True))          
             
@@ -397,8 +386,7 @@ def treealgorithm(h):
     return (G, gnodes)
 
 def forwardbackward(T, gt):
-    fb = HMM(T, gt)
-   
+    fb = HMM(T, gt)   
 
     #Create n the list of the number of edges in each level
     n = [T[0].out_degree(1)]
@@ -465,8 +453,7 @@ def forwardbackward(T, gt):
         prob = []
         #Set e to equal the edge description of edges sampled
 
-        e = fb.findedge(s[i], i, n[i])
-        
+        e = fb.findedge(s[i], i, n[i])        
 
         #For each position in forward probability matrix of level below, calculate sampling probabilities
         for b, j in enumerate(m[i-1].flat):
@@ -605,86 +592,104 @@ def treesequence(haplotypes,r):
                 haplotypes[j] = 1
     return haplotypes
 
-#Create empty list of allele frequencies
-allelefreq=[]
-alleles=[]
 
-#Extract genotypes from data
-f = open('/Users/mp18/Documents/bloch/Data/genotype_14.txt', 'rb')
-for line in f:
-    dic = {}   
-    l,r= line.split('\t',1)
-    for i in r:
-        if i in ('|','.','/','\t','\n'):
-            continue
-        else:
-            if i in dic:
-                dic[i] += 1
+parser = argparse.ArgumentParser()
+group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument('-a','--all',dest='all_input', help='input file')
+group.add_argument('-t','--tree',dest='tree_input',help='input file for treebuilder')
+group.add_argument('-fb', '--forwardbackward',dest='fb_files',action='append',help='input files for forwardbackward')
+
+parser.add_argument('-o', '--output', help='output filename(s) prefix')
+
+args = parser.parse_args()        
+filename = None
+
+if (args.tree_input != None):
+    filename = args.tree_input
+if (args.all_input != None):
+    filename = args.all_input
+
+if filename != None:
+    #Create empty list of allele frequencies
+    allelefreq=[]
+    alleles=[]
+
+    #Extract genotypes from data
+    f = open(filename, 'rb')
+    for line in f:
+        dic = {}   
+        l,r= line.split('\t',1)
+        for i in r:
+            if i in ('|','.','/','\t','\n'):
+                continue
             else:
-                dic[i] = 1
-    alleles.append(dic.keys())
-    allelefreq.append(dic.values())
+                if i in dic:
+                    dic[i] += 1
+                else:
+                    dic[i] = 1
+        alleles.append(dic.keys())
+        allelefreq.append(dic.values())
     
-#Move current position to beginning of the file
-f.seek(0,0)
-reader = csv.reader(f, delimiter='\t',skipinitialspace = True)        
-#Create list of tuples which contain genotypes of each individual
-GT = zip(*reader)
+    #Move current position to beginning of the file
+    f.seek(0,0)
+    reader = csv.reader(f, delimiter='\t',skipinitialspace = True)        
+    #Create list of tuples which contain genotypes of each individual
+    GT = zip(*reader)
 
-f.close()
+    f.close()
 
-#Remove first tuple of position names
-del GT[0]
+    #Remove first tuple of position names
+    del GT[0]
 
-#Haplotype length
-hlength=len(GT[0])-1
+    #Haplotype length
+    hlength=len(GT[0])-1
 
-#Create input for tree algorithm
-haplotypes = {}
+    #Create input for tree algorithm
+    haplotypes = {}
 
-#Randomly assign phase for each sample
-#Iterate through each sample
-for i in GT:
-    a=''
-    b=''
-    #Iterate through each genotype at each marker
-    for j, k in enumerate(i):                
-        x=k[0]
-        y=k[-1]
-        z=k[1]
+    #Randomly assign phase for each sample
+    #Iterate through each sample
+    for i in GT:
+        a=''
+        b=''
+        #Iterate through each genotype at each marker
+        for j, k in enumerate(i):                
+            x=k[0]
+            y=k[-1]
+            z=k[1]
 
-        #If allele is unknown, it is randomly imputed based on allele frequencies.
-        if x == '.':
-            x = alleles[j][random_weighted_choice(allelefreq[j])]
-        if y == '.':
-            y = alleles[j][random_weighted_choice(allelefreq[j])]            
+            #If allele is unknown, it is randomly imputed based on allele frequencies.
+            if x == '.':
+                x = alleles[j][random_weighted_choice(allelefreq[j])]
+            if y == '.':
+                y = alleles[j][random_weighted_choice(allelefreq[j])]            
 
-        #Unphased data is randomly phased
-        if z == '/':    
-            rand = random.randrange(0,2)
-            if rand == 0:
-                a+=x
-                b+=y
-            else:
+            #Unphased data is randomly phased
+            if z == '/':    
+                rand = random.randrange(0,2)
+                if rand == 0:
+                    a+=x
+                    b+=y
+                else:
+                    a+=y
+                    b+=x
+            #Phased data is put in corresponding haplotype
+            elif z == '|':
                 a+=y
                 b+=x
-        #Phased data is put in corresponding haplotype
-        elif z == '|':
-            a+=y
-            b+=x
+            else:
+                raise ValueError('Data: symbol is not | or \\')            
+
+        #Create list of haplotypes and counts to build tree with.        
+        if a in haplotypes:
+            haplotypes[a] += 1
         else:
-            raise ValueError('Data: symbol is not | or \\')            
+            haplotypes[a] = 1
 
-    #Create list of haplotypes and counts to build tree with.        
-    if a in haplotypes:
-        haplotypes[a] += 1
-    else:
-        haplotypes[a] = 1
-
-    if b in haplotypes:
-        haplotypes[b] += 1
-    else:
-        haplotypes[b] = 1
+        if b in haplotypes:
+            haplotypes[b] += 1
+        else:
+            haplotypes[b] = 1
 
 iterations = 1
 r=1
