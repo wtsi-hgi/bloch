@@ -16,6 +16,8 @@ import networkx as nx
 import random
 import sys
 import time
+import itertools
+import numpy as np
 
 
 def random_weighted_choice(weights):
@@ -76,6 +78,55 @@ def treebuild(GT):
 
             anode = add_marker(anode, a, n)           
             bnode = add_marker(bnode, b, n)
+
+    def mergetest(a,b):
+        pass
+
+    def mergenodes(a,b):
+        #Move all incoming edges of b to a
+        for i in G.in_edges(b, data=True, keys=True):
+            G.add_edge(i[0],a,a=i[3]['a'],weight=i[3]['weight'])
+            G.remove_edge(i[0],i[1],key=i[2])
+
+        q=[[a,b]]
+
+        while len(q) != 0:
+
+            da = [edata['a'] for u,v,edata in G.out_edges(a, data=True)]
+            db = [edata['a'] for u,v,edata in G.out_edges(b, data=True)]     
+            
+            sa = set(da)           
+            sb = set(db)
+
+            print sa
+            print sb
+            
+            #Iterates through alelles which elements in sb but not in sa
+            for i in sb.difference(sa):                
+                if i in da:
+                    pass
+                    
+
+                if i in db:
+                    pass
+            
+            #Iterates through alleles which are a member of both node's outgoing edges
+            for i in sa.intersectionn(sb):
+                pass
+
+
+
+
+            q.pop(0)
+
+        
+
+
+        G.remove_node(b)
+
+
+        
+    
            
     gnodes = []
     #Create list of nodes on each level.

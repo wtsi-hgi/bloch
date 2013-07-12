@@ -189,7 +189,7 @@ def treealgorithm(h):
             nodesplit(B,q[0][1],bnodes)
                                          
             da = dict((edata['a'],sum(A.node[v]['hap'].itervalues())) for u,v,edata in A.out_edges(q[0][0], data=True))
-            db = dict((edata['a'],sum(B.node[v]['hap'].itervalues())) for u,v,edata in B.out_edges(q[0][1], data=True))          
+            db = dict((edata['a'],sum(B.node[v]['hap'].itervalues())) for u,v,edata in B.out_edges(q[0][1], data=True))      
             
             sa = set(da.keys())           
             sb = set(db.keys())            
