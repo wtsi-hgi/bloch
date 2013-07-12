@@ -25,17 +25,6 @@ import functools
 import argparse
 import time
 
-
-
-def memoize(obj):
-    cache = obj.cache = {}
-
-    @functools.wraps(obj)
-    def memoizer(*args, **kwargs):
-        if args not in cache:
-            cache[args] = obj(*args, **kwargs)
-        return cache[args]
-    return memoizer
     
 class HMM:
     def __init__(self, T, gt):
@@ -43,7 +32,6 @@ class HMM:
         self.gt = gt
         
     #Haploid initial state probabilities. allele: allele number.
-    #@memoize
     def hapinitial(self, allele):
         #Edge counts are used. Count of edge/Total count for all edges.
         for i in self.T[0].out_edges(1, data=True):        
@@ -55,7 +43,6 @@ class HMM:
         return float(self.hapinitial(a))*float(self.hapinitial(b))
 
     #Emission state probabilities. gt: genotype. i: level. s: tuple of alleles.
-    #@memoize
     def emission(self, i,s):
         #If one allele is unknown. If known allele is contained in s then 1 is returned.
         if self.gt[i].count('.') == 1:
@@ -100,7 +87,6 @@ class HMM:
 
     #Function to find edge corresponding to matrix coordinate. g=flattened index. l=level(index of m), e = number of edges
     def findedge(self,g,l,e):
-
         #Convert flattened index to coordinate
         t = np.unravel_index(g, (e,e))    
         f = [-1,-1]
@@ -120,7 +106,6 @@ class HMM:
         if -1 in f:
             raise InputError('Error in findedge')
         else:
-
             return f
 
 def random_weighted_choice(weights):
@@ -259,7 +244,7 @@ def treealgorithm(h):
                 G.node[a]['hap'][key] += value
             #Otherwise add key and value to dictionary of node a
             else:
-                G.node[a]['hap'].update({key:value})
+                G.node[a]['hap'].update({.                                                                                                                                                                 key:value})
 
         #Move all incoming edges of b to a
         for i in G.in_edges(b, data=True, keys=True):
@@ -406,11 +391,9 @@ def forwardbackward(T, gt):
         
         #Append zero-filled matrix to list m
         m.append(np.zeros(shape=(n[i+1],n[i+1])))    
-
     
     #Initiation. Iterate through pairs of outgoing edges from node 1.
     for a, b in itertools.product([(i, j) for i, j in enumerate(T[0].out_edges(1, keys=True, data=True))], repeat=2):
-
         #If emmsion probability does not equal 0
         if fb.emission(0,(a[1][3]['a'],b[1][3]['a'])) != 0:              
             if a[1] == b[1]:
@@ -430,8 +413,7 @@ def forwardbackward(T, gt):
             #If emission probability does not equal 0
             if fb.emission(i,(a[1][3]['a'],b[1][3]['a'])) != 0.0:
 
-                var = sum([(m[i-1][c[0]][d[0]]*fb.diptrans((a[1][0],c[1][1],a[1][3]['weight']),(b[1][0],d[1][1],b[1][3]['weight']))) for c, d  in itertools.product([(e, f) for e, f in enumerate(T[0].out_edges(nbunch=T[1][i-1], keys=True, data=True))], repeat=2)])
-               
+                var = sum([(m[i-1][c[0]][d[0]]*fb.diptrans((a[1][0],c[1][1],a[1][3]['weight']),(b[1][0],d[1][1],b[1][3]['weight']))) for c, d  in itertools.product([(e, f) for e, f in enumerate(T[0].out_edges(nbunch=T[1][i-1], keys=True, data=True))], repeat=2)])               
                 #Matrix element is set to var calculation formula
                 m[i][a[0]][b[0]] = var
 
@@ -441,14 +423,8 @@ def forwardbackward(T, gt):
     #List of  flattened indices chosen from sampling 
     s = [0]*(hlength+1)
 
-    #Corresponding probabilities of the chosen positions 
-    p = [0]*(hlength+1)
-    #Randomly choose first element in m[3] according to initial probabilities
+    #Randomly choose first element in m[hlength] according to initial probabilities
     s[hlength] = random_weighted_choice(m[hlength].flatten())
-
-
-    #Set probability of the chosen position
-    p[hlength] = m[hlength].flatten()[s[hlength]]
 
     #Iterate through levels in reverse order
     for i in range(hlength, 0, -1):
@@ -464,20 +440,7 @@ def forwardbackward(T, gt):
             prob.append((fb.emission(i,(e[0][3]['a'],e[1][3]['a']))*fb.diptrans((e[0][0],d[0][1],e[0][3]['weight']),(e[1][0],d[1][1],e[1][3]['weight']))*j)/m[i].flat[s[i]])
 
         #Choose next sampled edge based on calculated probabilities
-        s[i-1] = random_weighted_choice(prob)
-        
-
-        #Record probability of chosen edges.
-        p[i-1] = prob[s[i-1]]
-
-
-    #Print descriptive list of chosen edges
-    #for i in range(hlength+1):
-    #print findedge(s[i], i)
-    #print 'The pair of paths has sampling probability in either order of'
-
-    #Calculate probability of sampled path
-    #print np.product(p)*2        
+        s[i-1] = random_weighted_choice(prob)        
 
     sample = ['','']
 
@@ -495,7 +458,6 @@ def viterbi(T, gt):
     
     #v is the list of matrices of viterbi probabilities at   m each level
     v = [np.zeros(shape=(n[0],n[0]))]
-
 
     #arglist is the list of matrices of path to find maximum viterbi probabilities
     arglist = [np.zeros((n[0],n[0]))]
@@ -529,20 +491,17 @@ def viterbi(T, gt):
 
     #Induction. Iterate through each level
     for i in range(1,hlength+1):
-
         #Iterate through ordered pairs of outgoing edges in each level
-        for a, b in itertools.product([(c, d) for c, d in enumerate(T[0].out_edges(nbunch=T[1][i], keys=True, data=True))], repeat=2):       
+        for a, b in itertools.product([(c, d) for c, d in enumerate(T[0].out_edges(nbunch=T[1][i], keys=True, data=True))], repeat=2):      
 
             #If emission probability does not equal 0
             if vi.emission(i,(a[1][3]['a'],b[1][3]['a'])) != 0:
-
                 max = 0
                 args = -1
 
                 #Calculate maximum value and record which edges correspond.
                 for c, d  in itertools.product([(e, f) for e, f in enumerate(T[0].out_edges(nbunch=T[1][i-1], keys=True, data=True))], repeat=2):                    
-                    value = (v[i-1][c[0]][d[0]]*vi.diptrans((a[1][0],c[1][1],a[1][3]['weight']), (b[1][0],d[1][1],b[1][3]['weight'])))
-                    
+                    value = (v[i-1][c[0]][d[0]]*vi.diptrans((a[1][0],c[1][1],a[1][3]['weight']), (b[1][0],d[1][1],b[1][3]['weight'])))                   
                    
                     if max < value:
                         max = value                    
@@ -623,8 +582,7 @@ if (args.fb_file != None):
     T[0] = nx.read_gpickle(args.fb_file + "_T[0]")
     T[1] = cPickle.load(file((args.fb_file + "_T[1]"),'rb'))
     GT = cPickle.load(file((args.fb_file + "_GT"),'rb'))
-    option = 2
-    
+    option = 2   
     
 
 if filename != None:
