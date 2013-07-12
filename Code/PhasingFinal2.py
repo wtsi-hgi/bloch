@@ -123,7 +123,7 @@ def treealgorithm(h):
         
         #Loop over keys in node's haplotype dictionary
         for key, value in G.node[n]['hap'].iteritems():
-            #If there exists an edge which corresponds to first character of key.
+
             #If there exists an edge which corresponds to first character of key.
             for u,v,k,edata in G.out_edges(n,data=True, keys=True):
                 if key[0] == edata['a']:
@@ -244,7 +244,7 @@ def treealgorithm(h):
                 G.node[a]['hap'][key] += value
             #Otherwise add key and value to dictionary of node a
             else:
-                G.node[a]['hap'].update({.                                                                                                                                                                 key:value})
+                G.node[a]['hap'].update({key:value})
 
         #Move all incoming edges of b to a
         for i in G.in_edges(b, data=True, keys=True):
