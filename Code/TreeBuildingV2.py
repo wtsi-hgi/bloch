@@ -18,6 +18,7 @@ import sys
 import time
 import itertools
 import numpy as np
+import math
 
 
 def random_weighted_choice(weights):
@@ -32,25 +33,26 @@ def treebuild(GT):
     #Add marker return new marker
     def add_marker(c, m, l):
         if G.out_degree(c) == 0:
-            n = G.order()+1
-            G.add_edge(c,n,a=m,weight=1)
-            G.add_node(n, level=l+1)
-            gnodes[l+1].append(n)
-            return n
+            d['nn'] += 1
+            G.add_edge(c,d['nn'],a=m,weight=1)
+            G.add_node(d['nn'], level=l+1,weight=1)
+            gnodes[l+1].append(d['nn'])
+            return d['nn']
         else:
-            for u,v,k,edata in G.out_edges(c,data=True, keys=True):
-                
+            for u,v,k,edata in G.out_edges(c,data=True, keys=True):                
                 if edata['a'] == m:
                     G.edge[u][v][k]['weight'] += 1
+                    G.node[v]['weight'] +=1
                     return v
 
-            n = G.order()+1
-            G.add_edge(c,n,a=m,weight=1)
-            G.add_node(n, level=l+1)
-            gnodes[l+1].append(n)
-            return n      
+            d['nn'] +=1
+            G.add_edge(c,d['nn'],a=m,weight=1)
+            G.add_node(d['nn'], level=l+1,weight=1)
+            gnodes[l+1].append(d['nn'])
+            return d['nn']   
     
     def add_genotype(gt):
+        G.node[1]['weight'] += 2
         #Set node pointers for adding both haplotypes
         anode = 1
         bnode = 1
@@ -80,54 +82,105 @@ def treebuild(GT):
             bnode = add_marker(bnode, b, n)
 
     def mergetest(a,b):
-        pass
+        print "mergetest nodes: "+str((a, b))
+        print G.node[a]
+        print G.node[b]
+        
+        #Components of formula are calculated
+        ta = G.node[a]['weight']
+        tb = G.node[b]['weight']
+        thr = math.sqrt(math.pow(ta, -1) + math.pow(tb, -1))
+        maxs = 0
+        print "mergetest nodes: "+str((a, b))
+        
+        q=[[a,b]]       
+
+        while len(q) != 0:
+
+            da = dict((edata['a'],G.edge[u][v][k]['weight']) for u,v,k,edata in G.out_edges(q[0][0], data=True, keys= True))
+            db = dict((edata['a'],G.edge[u][v][k]['weight']) for u,v,k,edata in G.out_edges(q[0][1], data=True, keys = True))      
+
+            sa = set(da.keys())           
+            sb = set(db.keys())
+
+            print sa
+            print sb
+           
+
+            #Iterate through elements that are in sa that are not in sb
+            for i in sa.difference(sb):                     
+                s = math.fabs(float(da[i])/float(ta))                
+                if s > thr:
+                    return 0.0
+                elif s > maxs:
+                    maxs = s
+
+            #Iterate through elements that are in sb but not sa
+            for i in sb.difference(sa):        
+                s = math.fabs(float(db[i])/float(tb))                
+                if s > thr:
+                    return 0.0
+                elif s > maxs:
+                    maxs = s
+
+            #Iterates through alleles which are a member of both node's outgoing edges
+            for i in sa.intersection(sb):
+                s = math.fabs(float(da[i])/ta - (float(db[i])/tb))
+                
+                if s > thr:
+                    return 0.0             
+                else:
+                    if s > maxs:
+                        maxs = s                        
+                    a = [v for u,v,edata in G.out_edges(q[0][0],data=True) if edata['a']==i]                   
+                    b = [v for u,v,edata in G.out_edges(q[0][1],data=True) if edata['a']==i]
+                    
+                    #Adds next nodes to list if edges has passed edge test            
+                    if G.node[a[0]]['level'] != (hlength+1):                        
+                        q.append([a[0],b[0]])
+
+            q.pop(0)
+        return maxs
+
+            
 
     def mergenodes(a,b):
+        print "mergenodes nodes: "+str((a, b))
         #Move all incoming edges of b to a
-        for i in G.in_edges(b, data=True, keys=True):
-            G.add_edge(i[0],a,a=i[3]['a'],weight=i[3]['weight'])
-            G.remove_edge(i[0],i[1],key=i[2])
+        for i,j,k,edata in G.in_edges(b, data=True, keys=True):
+            G.add_edge(i,a,a=edata['a'],weight=edata['weight'])
+            G.node[a]['weight'] += G.edge[i][j][k]['weight']
+            G.remove_edge(i,j,key=k)
 
         q=[[a,b]]
 
         while len(q) != 0:
 
-            da = [edata['a'] for u,v,edata in G.out_edges(a, data=True)]
-            db = [edata['a'] for u,v,edata in G.out_edges(b, data=True)]     
-            
-            sa = set(da)           
-            sb = set(db)
+            #Pairwise iterate through outgoing edges of a and b
+            for ba, bb, bk, bedata in G.out_edges(q[0][1], data=True, keys=True):
+                found = 0
+                for aa, ab, ak, aedata in G.out_edges(q[0][0], data=True, keys=True):
+                    if bedata['a'] == aedata['a']:
+                        found += 1
+                        G.edge[aa][ab][ak]['weight'] += bedata['weight']
+                        G.node[ab]['weight'] += bedata['weight']
+                        if G.node[ab]['level']!= (hlength +1):
+                            q.append([ab,bb])
+                        break               
 
-            print sa
-            print sb
-            
-            #Iterates through alelles which elements in sb but not in sa
-            for i in sb.difference(sa):                
-                if i in da:
-                    pass
-                    
+                if found == 0:
+                    G.add_edge(q[0][0],bb,a=bedata['a'],weight=bedata['weight'])
+                    G.remove_edge(ba,bb,key=bk)
 
-                if i in db:
-                    pass
-            
-            #Iterates through alleles which are a member of both node's outgoing edges
-            for i in sa.intersectionn(sb):
-                pass
+                if found > 1:
+                    print "ERROR"
 
+                G.remove_edge(ba,bb,key=bk)
 
-
-
+            G.remove_node(q[0][1])
             q.pop(0)
-
-        
-
-
-        G.remove_node(b)
-
-
-        
+      
     
-           
     gnodes = []
     #Create list of nodes on each level.
     for i in range(hlength+2):
@@ -137,8 +190,10 @@ def treebuild(GT):
     G=nx.MultiDiGraph()
     
     #Add start node 1.
-    G.add_node(1,level=0)    
-    gnodes[0].append(1)    
+    G.add_node(1,level=0,weight=0)    
+    gnodes[0].append(1)
+    d = {'nn': 1}
+    
     
     for i in GT:
         add_genotype(i)
@@ -149,7 +204,10 @@ def treebuild(GT):
     for j in G.edges(data=True, keys=True):
         print j
 
-    for i in gnodes:
+    
+
+    for i in gnodes[:-1]:
+        print i
         if len(i) == 1:
             pass
         
@@ -174,6 +232,7 @@ def treebuild(GT):
             #Calculate values in half of matrix
             for a, b in itertools.combinations(enumerate(i), 2):
                  simmatrix[a[0],b[0]] = mergetest(a[1],b[1])
+            
              
             #While some values in matrix are not equal to zero
             while np.count_nonzero(simmatrix) != 0:
@@ -182,7 +241,7 @@ def treebuild(GT):
                 ma = np.ma.masked_equal(simmatrix, 0.0, copy=False)
 
                 #Return 2D coordinates for position of minimum score
-                mnodes = np.unravel_index(ma.argmin(), (n,n))
+                mnodes = np.unravel_index(ma.argmin(), (n,n))        
 
                 #Merge nodes with lowest score
                 mergenodes(nlist[mnodes[0]],nlist[mnodes[1]])
@@ -208,14 +267,17 @@ def treebuild(GT):
                             simmatrix[i][mnodes[0]] = mergetest(nlist[i],nlist[mnodes[0]])
                         elif i > mnodes[0]:
                             simmatrix[mnodes[0]][i] = mergetest(nlist[mnodes[0]],nlist[i])   
-
+    d['nn'] += 1
+    G.add_node(d['nn'], weight = 0, level=hlength+1)
+    for i in gnodes[-1]:
+        for a,b,k,edata in G.out_edges(i, data=True, keys=True):
+            G.add_edge(a,d['nn'],a=edata['a'],weight=edata['weight'])
+            G.node[d['nn']]['weight'] += edata['weight']
+            G.remove_edge(a,b,key=k)
+            
+            
+        
     return G
-
-
-
-
-
-
 
     #sys.stdout.write("Start\t"+str(time.clock())+"\n")
 
@@ -260,6 +322,8 @@ if 0 != None:
 
     #Haplotype length
     hlength=len(GT[0])-1
+    print "hlength"
+    print hlength
 
 print "Files processed\t"+str(time.clock())+"\n"
 #sys.stdout.write("Files processed\t"+str(time.clock())+"\n")
@@ -268,4 +332,10 @@ print alleles
 print allelefreq
 
 G = treebuild(GT)
+
+for j in G.nodes(data=True):
+    print j
+
+for j in G.edges(data=True, keys=True):
+    print j
 

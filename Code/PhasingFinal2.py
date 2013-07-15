@@ -195,20 +195,19 @@ def treealgorithm(h):
             sb = set(db.keys())            
             
             #Iterates through alelles which are not a member of both node's outgoing edges and tests score against threshold
-            for i in sa.symmetric_difference(sb):                
-                if i in da:
-                    s = math.fabs(float(da[i])/float(ta))
-                    if s > thr:
-                         return False
-                    elif s > maxs:
-                        maxs = s
+            for i in sa.difference(sb):                     
+                s = math.fabs(float(da[i])/float(ta))
+                if s > thr:
+                    return False
+                elif s > maxs:
+                    maxs = s
 
-                if i in db:
-                    s = math.fabs(float(db[i])/float(tb))
-                    if s > thr:
-                        return False
-                    elif s > maxs:
-                        maxs = s
+            for i in sb.difference(sa):        
+                s = math.fabs(float(db[i])/float(tb))
+                if s > thr:
+                    return False
+                elif s > maxs:
+                    maxs = s
             
             #Iterates through alleles which are a member of both node's outgoing edges
             for i in sa.intersection(sb):
