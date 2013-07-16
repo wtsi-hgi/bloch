@@ -82,30 +82,21 @@ def treebuild(GT):
             bnode = add_marker(bnode, b, n)
 
     def mergetest(a,b):
-        print "mergetest nodes: "+str((a, b))
-        print G.node[a]
-        print G.node[b]
-        
         #Components of formula are calculated
         ta = G.node[a]['weight']
         tb = G.node[b]['weight']
         thr = math.sqrt(math.pow(ta, -1) + math.pow(tb, -1))
-        maxs = 0
-        print "mergetest nodes: "+str((a, b))
+        maxs = 0        
         
         q=[[a,b]]       
 
         while len(q) != 0:
 
             da = dict((edata['a'],G.edge[u][v][k]['weight']) for u,v,k,edata in G.out_edges(q[0][0], data=True, keys= True))
-            db = dict((edata['a'],G.edge[u][v][k]['weight']) for u,v,k,edata in G.out_edges(q[0][1], data=True, keys = True))      
+            db = dict((edata['a'],G.edge[u][v][k]['weight']) for u,v,k,edata in G.out_edges(q[0][1], data=True, keys = True))    
 
             sa = set(da.keys())           
-            sb = set(db.keys())
-
-            print sa
-            print sb
-           
+            sb = set(db.keys())         
 
             #Iterate through elements that are in sa that are not in sb
             for i in sa.difference(sb):                     
@@ -145,7 +136,16 @@ def treebuild(GT):
             
 
     def mergenodes(a,b):
-        print "mergenodes nodes: "+str((a, b))
+        print mergetest(a,b)
+        if a == 18:
+            print mergetest(19,14419)
+        print "Node a"
+        for i in G.in_edges(a, data=True):
+            print i
+        print "Node b"
+        for i in G.in_edges(b, data=True):
+            print i
+
         #Move all incoming edges of b to a
         for i,j,k,edata in G.in_edges(b, data=True, keys=True):
             G.add_edge(i,a,a=edata['a'],weight=edata['weight'])
@@ -158,25 +158,32 @@ def treebuild(GT):
 
             #Pairwise iterate through outgoing edges of a and b
             for ba, bb, bk, bedata in G.out_edges(q[0][1], data=True, keys=True):
+
                 found = 0
                 for aa, ab, ak, aedata in G.out_edges(q[0][0], data=True, keys=True):
+
                     if bedata['a'] == aedata['a']:
                         found += 1
                         G.edge[aa][ab][ak]['weight'] += bedata['weight']
                         G.node[ab]['weight'] += bedata['weight']
-                        if G.node[ab]['level']!= (hlength +1):
+                        if G.node[bb]['level'] != (hlength +1):  
                             q.append([ab,bb])
+                            
                         break               
 
                 if found == 0:
                     G.add_edge(q[0][0],bb,a=bedata['a'],weight=bedata['weight'])
-                    G.remove_edge(ba,bb,key=bk)
+                   
 
                 if found > 1:
                     print "ERROR"
 
                 G.remove_edge(ba,bb,key=bk)
+                if G.node[bb]['level'] == (hlength +1):
+                    gnodes[G.node[bb]['level']].remove(bb)
+                    G.remove_node(bb)
 
+            gnodes[G.node[q[0][1]]['level']].remove(q[0][1])
             G.remove_node(q[0][1])
             q.pop(0)
       
@@ -192,28 +199,19 @@ def treebuild(GT):
     #Add start node 1.
     G.add_node(1,level=0,weight=0)    
     gnodes[0].append(1)
-    d = {'nn': 1}
-    
+    d = {'nn': 1}    
     
     for i in GT:
         add_genotype(i)
-
-    for j in G.nodes(data=True):
-        print j
-
-    for j in G.edges(data=True, keys=True):
-        print j
-
+    print G.order()
     
-
-    for i in gnodes[:-1]:
-        print i
+        
+    for i in list(gnodes[:-1]):
         if len(i) == 1:
             pass
         
         elif len(i) == 2:
-
-            if mergetest(i[0],i[1]) == True:
+            if mergetest(i[0],i[1]) != 0.0:
                 mergenodes(i[0],i[1])
 
         else:
@@ -266,34 +264,37 @@ def treebuild(GT):
                         elif i < mnodes[0]:
                             simmatrix[i][mnodes[0]] = mergetest(nlist[i],nlist[mnodes[0]])
                         elif i > mnodes[0]:
-                            simmatrix[mnodes[0]][i] = mergetest(nlist[mnodes[0]],nlist[i])   
+                            simmatrix[mnodes[0]][i] = mergetest(nlist[mnodes[0]],nlist[i])
+                
+
+
     d['nn'] += 1
     G.add_node(d['nn'], weight = 0, level=hlength+1)
-    for i in gnodes[-1]:
-        for a,b,k,edata in G.out_edges(i, data=True, keys=True):
+
+    for i in list(gnodes[-1]):
+        for a,b,k,edata in G.in_edges(i, data=True, keys=True):
             G.add_edge(a,d['nn'],a=edata['a'],weight=edata['weight'])
             G.node[d['nn']]['weight'] += edata['weight']
             G.remove_edge(a,b,key=k)
+            gnodes[G.node[i]['level']].remove(i)
+            G.remove_node(i)
+    gnodes[-1] = [d['nn']]                         
             
-            
-        
     return G
 
-    #sys.stdout.write("Start\t"+str(time.clock())+"\n")
+sys.stdout.write("Start\t"+str(time.clock())+"\n")
 
-    #parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser()
+parser.add_argument('-t','--tree',dest='tree_input',help='input file for treebuilder')
+args = parser.parse_args()   
 
-    #parser.add_argument('-t','--tree',dest='tree_input',help='input file for treebuilder')
-
-    #args.tree_input
-
-if 0 != None:
+if args.tree_input != None:
     #Create empty list of allele frequencies
     allelefreq=[]
     alleles=[]
 
     #Extract genotypes from data
-    f = open('/Users/mp18/Documents/bloch/Data/genotype_2.txt', 'rb')
+    f = open(args.tree_input, 'rb')
     imputed = []
     for line in f:
         dic = {}   
@@ -322,20 +323,9 @@ if 0 != None:
 
     #Haplotype length
     hlength=len(GT[0])-1
-    print "hlength"
-    print hlength
 
-print "Files processed\t"+str(time.clock())+"\n"
-#sys.stdout.write("Files processed\t"+str(time.clock())+"\n")
-
-print alleles
-print allelefreq
-
+sys.stdout.write("Files processed\t"+str(time.clock())+"\n")
 G = treebuild(GT)
-
-for j in G.nodes(data=True):
-    print j
-
-for j in G.edges(data=True, keys=True):
-    print j
+print G.order()
+sys.stdout.write("Tree Built\t"+str(time.clock())+"\n")
 

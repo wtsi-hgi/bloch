@@ -233,6 +233,17 @@ def treealgorithm(h):
 
     #Function merges 2 nodes. a should always be < b
     def mergenodes(a,b):
+        print mergetest(a,b)
+        if a == 55:
+            print mergetest(56,59)
+        
+        print "Node a"
+        for i in G.in_edges(a, data=True):
+            print i
+        print "Node b"
+        for i in G.in_edges(b, data=True):
+            print i
+            
         if G.node[a]['level'] != G.node[b]['level']:
             raise ValueError('Nodes to merged are not on the same level')        
   
@@ -326,7 +337,9 @@ def treealgorithm(h):
                         elif i < mnodes[0]:
                             simmatrix[i][mnodes[0]] = mergetest(nlist[i],nlist[mnodes[0]])
                         elif i > mnodes[0]:
-                            simmatrix[mnodes[0]][i] = mergetest(nlist[mnodes[0]],nlist[i])    
+                            simmatrix[mnodes[0]][i] = mergetest(nlist[mnodes[0]],nlist[i])
+
+                
         
     gnodes = []
     #Create list of nodes on each level.
@@ -352,6 +365,7 @@ def treealgorithm(h):
 
     #Set endnode as first node in last level
     endnode = max(gnodes[-2]) +1
+    
 
     #Iterate through all nodes on penultimate level
     for i in gnodes[-2]:
@@ -672,9 +686,13 @@ sys.stdout.write("Files processed\t"+str(time.clock())+"\n")
 #Option 1 is to produce first tree data and pickle
 if option == 1:
     T = treealgorithm(haplotypes)
-    nx.write_gpickle(T[0], args.output +"_T[0]")
-    cPickle.dump(T[1], open(args.output + "_T[1]","w"))
-    cPickle.dump(GT, open(args.output + "_GT","w"))
+    print T[0].order()
+    sys.stdout.write("Tree Built\t"+str(time.clock())+"\n")
+
+    
+    #nx.write_gpickle(T[0], args.output +"_T[0]")
+    #cPickle.dump(T[1], open(args.output + "_T[1]","w"))
+    #cPickle.dump(GT, open(args.output + "_GT","w"))
 
 #Option 0 is to do all computation
 if option == 0:

@@ -68,11 +68,13 @@ while allzero(frequency) == False:
             l4 += '\t'
             s=1
         elif s==1:
-            r = random.randint(0,2)
-            if r == 0:
-                m = '|'
-            else:
-                m = '/'
+            m = '|'
+            
+            #r = random.randint(0,2)
+            #if r == 0:
+            #    m = '|'
+            #else:
+            #    m = '/'
             
             l1 += m
             l2 += m
@@ -93,7 +95,7 @@ l2 += '\n'
 l3 += '\n'
 l4 += '\n'
 
-f = open('/Users/mp18/Documents/bloch/Data/genotype_2.txt', 'w')
+f = open('/Users/mp18/Documents/bloch/Data/genotype_a.txt', 'w')
 f.write(l1)
 f.write(l2)
 f.write(l3)
