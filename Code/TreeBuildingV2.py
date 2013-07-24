@@ -136,15 +136,7 @@ def treebuild(GT):
             
 
     def mergenodes(a,b):
-        print mergetest(a,b)
-        if a == 18:
-            print mergetest(19,14419)
-        print "Node a"
-        for i in G.in_edges(a, data=True):
-            print i
-        print "Node b"
-        for i in G.in_edges(b, data=True):
-            print i
+       
 
         #Move all incoming edges of b to a
         for i,j,k,edata in G.in_edges(b, data=True, keys=True):
@@ -203,7 +195,7 @@ def treebuild(GT):
     
     for i in GT:
         add_genotype(i)
-    print G.order()
+   
     
         
     for i in list(gnodes[:-1]):
@@ -326,6 +318,6 @@ if args.tree_input != None:
 
 sys.stdout.write("Files processed\t"+str(time.clock())+"\n")
 G = treebuild(GT)
-print G.order()
+
 sys.stdout.write("Tree Built\t"+str(time.clock())+"\n")
 

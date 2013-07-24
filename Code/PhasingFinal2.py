@@ -233,16 +233,7 @@ def treealgorithm(h):
 
     #Function merges 2 nodes. a should always be < b
     def mergenodes(a,b):
-        print mergetest(a,b)
-        if a == 55:
-            print mergetest(56,59)
-        
-        print "Node a"
-        for i in G.in_edges(a, data=True):
-            print i
-        print "Node b"
-        for i in G.in_edges(b, data=True):
-            print i
+
             
         if G.node[a]['level'] != G.node[b]['level']:
             raise ValueError('Nodes to merged are not on the same level')        
@@ -430,7 +421,9 @@ def forwardbackward(T, gt):
                 #Matrix element is set to var calculation formula
                 m[i][a[0]][b[0]] = var
 
-
+    if gt == ('0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '1|1', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '1|0', '0|0', '0|0', '1|0', '0|1', '0|0', '0|0', '0|0', '0|0', '1|1', '0|0', '0|0', '0|0', '1|1', '0|0', '0|0', '0|0', '0|1', '1|0', '0|0', '0|0', '0|0', '0|0', '1|1', '0|0', '0|0', '0|0', '0|0', '0|0', '0|1', '0|0', '1|1', '0|0', '1|0', '0|0', '0|0', '1|0', '0|0', '0|0', '0|0', '0|0', '0|0', '1|1', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '1|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '1|0', '0|0', '0|0', '0|0', '0|0', '0|0', '1|1', '0|0', '0|1', '0|0', '0|1', '0|1', '0|1', '0|1', '0|0', '0|1', '0|1', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|1', '1|1', '1|0', '0|0', '1|1', '0|0', '1|1'):
+        for i in m:
+            print i
     #Backwards sampling
 
     #List of  flattened indices chosen from sampling 
@@ -571,40 +564,43 @@ def treesequence(haplotypes,r):
 
 sys.stdout.write("Start\t"+str(time.clock())+"\n")
 
-parser = argparse.ArgumentParser()
-group = parser.add_mutually_exclusive_group(required=True)
-group.add_argument('-a','--all',dest='all_input', help='input file')
-group.add_argument('-t','--tree',dest='tree_input',help='input file for treebuilder')
-group.add_argument('-fb', '--forwardbackward',dest='fb_file',help='input file prefix for forwardbackward')
-
-parser.add_argument('-i', '--iterations',dest="m",default=9,type=int,choices=range(1,10,2),help='number of iterations of the fb algorithm. Must be odd number up to 9.')
-parser.add_argument('-o', '--output',dest="output", help='output filename(s) prefix')
-
-args = parser.parse_args()        
-filename = None
+#===============================================================================
+# parser = argparse.ArgumentParser()
+# group = parser.add_mutually_exclusive_group(required=True)
+# group.add_argument('-a','--all',dest='all_input', help='input file')
+# group.add_argument('-t','--tree',dest='tree_input',help='input file for treebuilder')
+# group.add_argument('-fb', '--forwardbackward',dest='fb_file',help='input file prefix for forwardbackward')
+# 
+# parser.add_argument('-i', '--iterations',dest="m",default=9,type=int,choices=range(1,10,2),help='number of iterations of the fb algorithm. Must be odd number up to 9.')
+# parser.add_argument('-o', '--output',dest="output", help='output filename(s) prefix')
+# 
+# args = parser.parse_args()        
+# filename = None
+# option = 0
+# T=[0,0]
+# if (args.all_input != None):
+#     filename = args.all_input
+#     
+# if (args.tree_input != None):
+#     filename = args.tree_input
+#     option = 1
+#     
+# if (args.fb_file != None):
+#     T[0] = nx.read_gpickle(args.fb_file + "_T[0]")
+#     T[1] = cPickle.load(file((args.fb_file + "_T[1]"),'rb'))
+#     GT = cPickle.load(file((args.fb_file + "_GT"),'rb'))
+#     option = 2   
+#===============================================================================
+filename=None 
 option = 0
-T=[0,0]
-if (args.all_input != None):
-    filename = args.all_input
-    
-if (args.tree_input != None):
-    filename = args.tree_input
-    option = 1
-    
-if (args.fb_file != None):
-    T[0] = nx.read_gpickle(args.fb_file + "_T[0]")
-    T[1] = cPickle.load(file((args.fb_file + "_T[1]"),'rb'))
-    GT = cPickle.load(file((args.fb_file + "_GT"),'rb'))
-    option = 2   
-    
 
-if filename != None:
+if filename == None:
     #Create empty list of allele frequencies
     allelefreq=[]
     alleles=[]
 
     #Extract genotypes from data
-    f = open(filename, 'rb')
+    f = open('/Users/mp18/Documents/bloch/Data/genotype_14.txt', 'rb')
     imputed = []
     for line in f:
         dic = {}   
@@ -686,7 +682,7 @@ sys.stdout.write("Files processed\t"+str(time.clock())+"\n")
 #Option 1 is to produce first tree data and pickle
 if option == 1:
     T = treealgorithm(haplotypes)
-    print T[0].order()
+
     sys.stdout.write("Tree Built\t"+str(time.clock())+"\n")
 
     
@@ -699,38 +695,40 @@ if option == 0:
     iterations = 1
     r=1
 
-    sys.stdout.write(str(args.m)+" iterations\n")
+    #sys.stdout.write(str(args.m)+" iterations\n")
     sys.stdout.write("1\t\t"+str(time.clock())+"\n")
     haplotypes = treesequence(haplotypes, 0)
     
-    while iterations < args.m:
-        sys.stdout.write(str(iterations+1)+"\t\t"+str(time.clock())+"\n")    
-    
-        haplotypes = reverseorder(haplotypes)
-        haplotypes = treesequence(haplotypes,r)
-        iterations += 1
-        r += 1
-        r = r%2
-        
-    sys.stdout.write("Iterations done\t"+str(time.clock())+"\n")
-    T = treealgorithm(haplotypes)
-    sys.stdout.write("Final tree built\t"+str(time.clock())+"\n")
-    phased=[]
-    correct = 0
-    incorrect = 0
-
-    
-    for i in GT:
-        result = viterbi(T, i)
-        for a,b in enumerate(result):
-            imputed[a] += (b[0]+"|"+b[1]+"\t")
-    sys.stdout.write("Writing to file\t"+str(time.clock())+"\n")
-
-    g = open(args.output+".txt", "w")
-    for i in imputed:
-        g.write(i+"\n")
-    
-    g.close()
+#===============================================================================
+#     while iterations < args.m:
+#         sys.stdout.write(str(iterations+1)+"\t\t"+str(time.clock())+"\n")    
+#     
+#         haplotypes = reverseorder(haplotypes)
+#         haplotypes = treesequence(haplotypes,r)
+#         iterations += 1
+#         r += 1
+#         r = r%2
+#         
+#     sys.stdout.write("Iterations done\t"+str(time.clock())+"\n")
+#     T = treealgorithm(haplotypes)
+#     sys.stdout.write("Final tree built\t"+str(time.clock())+"\n")
+#     phased=[]
+#     correct = 0
+#     incorrect = 0
+# 
+#     
+#     for i in GT:
+#         result = viterbi(T, i)
+#         for a,b in enumerate(result):
+#             imputed[a] += (b[0]+"|"+b[1]+"\t")
+#     sys.stdout.write("Writing to file\t"+str(time.clock())+"\n")
+# 
+#     g = open(args.output+".txt", "w")
+#     for i in imputed:
+#         g.write(i+"\n")
+#     
+#     g.close()
+#===============================================================================
 
 #Option 2 is to run fb algorithm once per genotype on to tree.
 if option == 2:
