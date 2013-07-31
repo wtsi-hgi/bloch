@@ -311,41 +311,51 @@ class HMM:
             return 1
 
         #If gt equals s without order 1 is returned
-        else:
-            
+        else:    
             
             if set([self.gt[i][0],self.gt[i][-1]]) == set(s):
                 return 1
             else:
                 return 0.0
 
-    #Transition state probabilities. p = parent node of edge e
-    #c = child node of edge d. w = weight of edge e.
-    def haptrans(self,(p,c,w)):
-        #If parent node of edge e is child node of edge d.
-        if p == c:
-            #Edge count/parent node count is returned            
-            return float(w)/float(self.T.node[p]['weight']) 
-        else:
-            return 0.0
+#     #Transition state probabilities. p = parent node of edge e
+#     #c = child node of edge d. w = weight of edge e.
+#     def haptrans(self,(p,c,w)):
+#         #If parent node of edge e is child node of edge d.
+#         if p == c:
+#             #Edge count/parent node count is returned            
+#             return float(w)/float(self.T.node[p]['weight']) 
+#         else:
+#             return 0.0
 
     #Diploid transition probabilities
     def diptrans(self, a, b):
-        return float(self.haptrans(a)*float(self.haptrans(b)))
+        
+        (p,c,w) = a
+        (q,d,x) = b
+
+        if p == c:
+            
+            if q == d:
+                return (float(w)*float(x))/(float(self.T.node[p]['weight'])*float(self.T.node[q]['weight']))
+                
+            else:
+                return 0.0            
+        else:
+            return 0.0
+        
+        
+        return self.haptrans(a)*self.haptrans(b)
          
     
     
         
 def forwardbackward(Tree,gt):
-    fb = HMM(Tree,gt)
-    
-    
-    
+    fb = HMM(Tree,gt)     
     
     #Create empty list containing lists of forward probabilities and edge pairs at each level
     edges=[[]]
-    forward = [[]]
-    
+    forward = [[]]    
         
     #Initiation. Iterate through pairs of outgoing edges from node 1.
     for a, b in itertools.product([j for j in Tree.T.out_edges(1, keys=True, data=True)], repeat=2):
@@ -360,8 +370,7 @@ def forwardbackward(Tree,gt):
             
         if var != 0.0:
             edges[0].append((a,b))
-            forward[0].append(var)
-    
+            forward[0].append(var)    
 
     #Induction.  Iterate through each level.
     for i in range(1,hlength+1):
@@ -375,21 +384,13 @@ def forwardbackward(Tree,gt):
             if fb.emission(i,(a[3]['a'],b[3]['a'])) != 0.0:
                 
                 for j, k in enumerate(edges[i-1]):
-#                     if gt == ('0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '1|1', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '1|0', '0|0', '0|0', '1|0', '0|1', '0|0', '0|0', '0|0', '0|0', '1|1', '0|0', '0|0', '0|0', '1|1', '0|0', '0|0', '0|0', '0|1', '1|0', '0|0', '0|0', '0|0', '0|0', '1|1', '0|0', '0|0', '0|0', '0|0', '0|0', '0|1', '0|0', '1|1', '0|0', '1|0', '0|0', '0|0', '1|0', '0|0', '0|0', '0|0', '0|0', '0|0', '1|1', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '1|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '1|0', '0|0', '0|0', '0|0', '0|0', '0|0', '1|1', '0|0', '0|1', '0|0', '0|1', '0|1', '0|1', '0|1', '0|0', '0|1', '0|1', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|1', '1|1', '1|0', '0|0', '1|1', '0|0', '1|1'):
-#                         if i == hlength:
-#                             print a, b
-#                             print k
-#                             print fb.diptrans((a[0],k[0][1],a[3]['weight']),(b[0],k[1][1],b[3]['weight']))
+
                     var += (forward[i-1][j]*(fb.diptrans((a[0],k[0][1],a[3]['weight']),(b[0],k[1][1],b[3]['weight']))))
                     
             if var != 0.0:
                 edges[i].append((a,b))
                 forward[i].append(var)  
-    if gt == ('0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '1|1', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '1|0', '0|0', '0|0', '1|0', '0|1', '0|0', '0|0', '0|0', '0|0', '1|1', '0|0', '0|0', '0|0', '1|1', '0|0', '0|0', '0|0', '0|1', '1|0', '0|0', '0|0', '0|0', '0|0', '1|1', '0|0', '0|0', '0|0', '0|0', '0|0', '0|1', '0|0', '1|1', '0|0', '1|0', '0|0', '0|0', '1|0', '0|0', '0|0', '0|0', '0|0', '0|0', '1|1', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '1|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '1|0', '0|0', '0|0', '0|0', '0|0', '0|0', '1|1', '0|0', '0|1', '0|0', '0|1', '0|1', '0|1', '0|1', '0|0', '0|1', '0|1', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|0', '0|1', '1|1', '1|0', '0|0', '1|1', '0|0', '1|1'):
-        for i in range(len(edges)):
-            print edges[i]
-            print forward[i]
-     
+   
            
     #s stores the list of chosen edge pairs from front to back             
     s = []
@@ -419,7 +420,69 @@ def forwardbackward(Tree,gt):
         
     return alleles
     
+def viterbi(Tree, gt):
+    vi = HMM(Tree,gt)     
     
+    #Create empty list containing lists of forward probabilities and edge pairs at each level
+    edges=[[]]
+    viterbi = [[]]    
+    maximum = [[]]
+        
+    #Initiation. Iterate through pairs of outgoing edges from node 1.
+    for a, b in itertools.product([j for j in Tree.T.out_edges(1, keys=True, data=True)], repeat=2):
+        var = 0.0
+        #If emmsion probability does not equal 0
+        if vi.emission(0,(a[3]['a'],b[3]['a'])) != 0.0:              
+            if a[1] == b[1]:
+                t = vi.hapinitial(a[3]['a'])
+                var = t*t            
+            else:
+                var = vi.dipinitial(a[3]['a'], b[3]['a'])
+            
+        if var != 0.0:
+            edges[0].append((a,b))
+            viterbi[0].append(var)    
+
+    #Induction.  Iterate through each level.
+    for i in range(1,hlength+1):
+
+        edges.append([])
+        viterbi.append([])
+        maximum.append([])
+      
+        for a, b in itertools.product([j for j in Tree.T.out_edges(nbunch=Tree.tnodes[i], keys=True, data=True)], repeat=2):
+            m = 0.0
+            medge = 0
+            #If emission probability does not equal 0
+            if vi.emission(i,(a[3]['a'],b[3]['a'])) != 0.0:
+                
+                for j, k in enumerate(edges[i-1]):
+
+                    var = (viterbi[i-1][j]*(vi.diptrans((a[0],k[0][1],a[3]['weight']),(b[0],k[1][1],b[3]['weight']))))
+                    if m < var:
+                        m = var
+                        medge = k
+                        
+            if m != 0.0:
+                edges[i].append((a,b))
+                viterbi[i].append(m)
+                maximum[i].append(medge)          
+
+
+    value = viterbi[hlength].index(max(viterbi[hlength]))
+
+    final = []
+    
+    for i in range(hlength,-1,-1):    
+        e = edges[i][value]
+        final.insert(0,[e[0][3]['a'],e[1][3]['a']])
+        
+        if i == 0:
+            break
+        value = edges[i-1].index(maximum[i][value])      
+    
+    return final
+        
     
     
 #Beginning of code.  Print start time.
@@ -455,17 +518,19 @@ sys.stdout.write("Start\t"+str(time.clock())+"\n")
 #Parse command line arguements
 parser = argparse.ArgumentParser()
 parser.add_argument('-t','--tree',dest='tree_input',help='input genotype file. phased or unphased.')
-parser.add_argument('-o','--output',dest='output_filename',help='output filename')
+parser.add_argument('-o','--output',dest='output',help='output filename')
 args = parser.parse_args()   
 
+filename = args.tree_input
+
 #args.tree_input
-if 0 != None:
+if filename != None:
     #Create empty list of allele frequencies
     allelefreq=[]
     alleles=[]
 
     #Extract genotypes from data
-    f = open('/Users/mp18/Documents/bloch/Data/genotype_14.txt', 'rb')
+    f = open(filename, 'rb')
     #Create marker name list for use at the end
     imputed = []
     for line in f:
@@ -524,34 +589,66 @@ for i in GT:
             b = alleles[n][random_weighted_choice(allelefreq[n])]
         
         gt.append([a,b])
-        
-
-        
+          
     G.add_genotype(gt)
 
 G = G.merge()
 
+iterations = 10
 
 sys.stdout.write("1st Tree Built\t"+str(time.clock())+"\n")
 
-H = Tree(1)
 
-for i in G.T.nodes(data=True):
-    print i
+def sequence(G):
+    if G.d == 0:        
+        H = Tree(1)
+        for i in GT:
+            H.add_genotype(forwardbackward(G,i))
+    elif G.d == 1:
+        H = Tree(0)
+        for i in GT:
+            j = i[::-1]
+            H.add_genotype(forwardbackward(G,j))
+        
+    else:
+        print "Error in graph direction"
+    H.merge()
     
-for i in G.T.edges(data=True, keys=True):
-    print i
+    return H
     
+while iterations > 0:
+    G = sequence(G) 
+    sys.stdout.write(str(iterations)+"\t"+str(time.clock())+"\n")
 
-for i in GT:
-    H.add_genotype(forwardbackward(G,i))
+        
+    iterations -= 1
+
+output = []
+if G.d == 0:
+    for i in GT:
+        output.append(viterbi(G,i))
+    
+if G.d == 1:
+    for i in GT:        
+        j = i[::-1]
+        output.append(viterbi(G,j)[::-1])       
+
+
+
+for i in output:
+    for j, k in enumerate(i):        
+        imputed[j] += (str(k[0])+"|"+str(k[1])+"\t")
+        
 
     
-#H = H.merge()
-#for i in H.T.nodes(data=True):
-#    print i
-#for i in H.T.edges(data=True, keys=True):
-#    print i
+g = open(args.output+".txt","w")   
 
-sys.stdout.write("2nd Iteration\t"+str(time.clock())+"\n")
+
+for i in imputed:
+    g.write(i+"\n")
+     
+g.close()
+    
+sys.stdout.write("End\t"+str(time.clock())+"\n")
+
 
