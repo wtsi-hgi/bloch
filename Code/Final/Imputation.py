@@ -277,65 +277,41 @@ class HMM:
         self.T = Tree.T
         self.gt = gt
     
-    #Haploid initial state probabilities. allele: allele number.
-    def hapinitial(self, allele):
-        #Edge counts are used. Count of edge/Total count for all edges.
-        for i in self.T.out_edges(1, data=True):        
-            if i[2]['a'] == allele:                
-                return float(i[2]['weight'])/float(self.T.node[1]['weight'])
 
     #Diploid initial state probabilities. a,b: allele number
-    def dipinitial(self, a,b):    
-        return float(self.hapinitial(a))*float(self.hapinitial(b))
+    def dipinitial(self, a,b):
+        for i in self.T.out_edges(1,data=True):
+            if i[2]['a'] == a:
+                valuea = float(i[2]['weight'])/float(self.T.node[1]['weight'])
+            if i[2]['a'] == b:
+                valueb = float(i[2]['weight'])/float(self.T.node[1]['weight'])
+                
+        return valuea*valueb        
+ 
 
     #Emission state probabilities. i: level. s: tuple of alleles.
     def emission(self, i,s):
-        #If one allele is unknown. If known allele is contained in s then 1 is returned.
-        if self.gt[i].count('.') == 1:
-            x = self.gt[i][0]
-            y = self.gt[i][-1]
-
-            if x == '.':
-                if y in s:
-                    return 1
-                else:
-                    return 0.0
+        genotype = [self.gt[i][0], self.gt[i][-1]]
+        genotype.sort()        
+        
+        if genotype[0] == '.':
+            if genotype[1] == '.':
+                return 1.0
             else:
-                if x in s:
-                    return 1
-                else:
-                    return 0.0   
-                
-        #If both alleles are unknown 1 is returned
-        if self.gt[i].count('.') == 2:        
-            return 1
-
-        #If gt equals s without order 1 is returned
-        else:    
-            
-            if set([self.gt[i][0],self.gt[i][-1]]) == set(s):
-                return 1
+                if genotype[1] in s:
+                    return 1.0      
+        else:
+            if set(genotype) == set(s):
+                return 1.0
             else:
                 return 0.0
-
-#     #Transition state probabilities. p = parent node of edge e
-#     #c = child node of edge d. w = weight of edge e.
-#     def haptrans(self,(p,c,w)):
-#         #If parent node of edge e is child node of edge d.
-#         if p == c:
-#             #Edge count/parent node count is returned            
-#             return float(w)/float(self.T.node[p]['weight']) 
-#         else:
-#             return 0.0
+  
 
     #Diploid transition probabilities
-    def diptrans(self, a, b):
-        
+    def diptrans(self, a, b):        
         (p,c,w) = a
         (q,d,x) = b
-
-        if p == c:
-            
+        if p == c:            
             if q == d:
                 return (float(w)*float(x))/(float(self.T.node[p]['weight'])*float(self.T.node[q]['weight']))
                 
@@ -343,11 +319,7 @@ class HMM:
                 return 0.0            
         else:
             return 0.0
-        
-        
-        return self.haptrans(a)*self.haptrans(b)
-         
-    
+   
     
         
 def forwardbackward(Tree,gt):
@@ -362,11 +334,8 @@ def forwardbackward(Tree,gt):
         var = 0.0
         #If emmsion probability does not equal 0
         if fb.emission(0,(a[3]['a'],b[3]['a'])) != 0.0:              
-            if a[1] == b[1]:
-                t = fb.hapinitial(a[3]['a'])
-                var = t*t            
-            else:
-                var = fb.dipinitial(a[3]['a'], b[3]['a'])
+
+            var = fb.dipinitial(a[3]['a'], b[3]['a'])
             
         if var != 0.0:
             edges[0].append((a,b))
@@ -433,11 +402,7 @@ def viterbi(Tree, gt):
         var = 0.0
         #If emmsion probability does not equal 0
         if vi.emission(0,(a[3]['a'],b[3]['a'])) != 0.0:              
-            if a[1] == b[1]:
-                t = vi.hapinitial(a[3]['a'])
-                var = t*t            
-            else:
-                var = vi.dipinitial(a[3]['a'], b[3]['a'])
+            var = vi.dipinitial(a[3]['a'], b[3]['a'])
             
         if var != 0.0:
             edges[0].append((a,b))
