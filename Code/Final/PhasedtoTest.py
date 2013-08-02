@@ -13,8 +13,8 @@
 import csv
 import random
 
-f = open('/Users/mp18/Documents/bloch/Data/genotype_1.txt', 'rb')
-g = open('/Users/mp18/Documents/bloch/Data/genotype_1b.txt', 'w')
+f = open('/Users/mp18/Documents/bloch/Data/genotype_10.txt', 'rb')
+g = open('/Users/mp18/Documents/bloch/Data/genotype_10b.txt', 'w')
 
 
 

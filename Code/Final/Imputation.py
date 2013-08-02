@@ -596,7 +596,7 @@ if G.d == 0:
 if G.d == 1:
     for i in GT:        
         j = i[::-1]
-        output.append(viterbi(G,j)[::-1])       
+        output.append(viterbi(G,j)[::-1])      
 
 
 
