@@ -26,6 +26,9 @@ AM_INIT_AUTOMAKE([foreign 1.13 -Wall -Werror dist-bzip2])
 AC_PROG_CC
 gl_EARLY
 
+# Check for C++ compiler
+AC_PROG_CXX
+
 # Configure automake to use modulename_CFLAGS, modulename_LDFLAGS, etc.
 AM_PROG_CC_C_O
 
