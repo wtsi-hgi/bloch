@@ -3,7 +3,7 @@ AC_INIT([bloch], [0.1], [jcrandall@alum.mit.edu])
 AC_PREREQ([2.69])
 
 # Check to make sure that the src dir actually exists (sanity check)
-AC_CONFIG_SRCDIR([src/bloch.c])
+AC_CONFIG_SRCDIR([src/bloch.cc])
 
 # Configure aux dirs
 AC_CONFIG_AUX_DIR([build-aux])
@@ -22,12 +22,12 @@ AC_PROG_MAKE_SET
 AM_INIT_AUTOMAKE([foreign 1.13 -Wall -Werror dist-bzip2])
 #AM_GNU_GETTEXT_VERSION([0.18.2])
 
+# Check for C++ compiler
+AC_PROG_CXX
+
 # Check for C compiler
 AC_PROG_CC
 gl_EARLY
-
-# Check for C++ compiler
-AC_PROG_CXX
 
 # Configure automake to use modulename_CFLAGS, modulename_LDFLAGS, etc.
 AM_PROG_CC_C_O
