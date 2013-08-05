@@ -22,6 +22,10 @@ gnulib/
 libtool
 stamp-h1
 
+# Ignore whole directories
+.deps/
+gl/
+
 # Generated files
 test/vars
 config.h.in
