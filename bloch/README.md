@@ -4,15 +4,17 @@ BLOCH
 Genotype imputation software written in C/C++ that implements the methods described 
 in [Browning and Browning (2007)](http://dx.doi.org/10.1086/521987). 
 
+
 Prerequisities
-============== 
+--------------
+
  * [LEMON](http://lemon.cs.elte.hu/) >= 1.2.3
  * [zlib](http://zlib.net/) >= 1.2.8
  * [htslib](https://github.com/samtools/htslib/)
 
 
 Preparing source repository for compilation
-===========================================
+-------------------------------------------
 
 First, install the build dependencies:
  * [LEMON](http://lemon.cs.elte.hu/)
@@ -34,8 +36,9 @@ When it has completed successfully, you should now see the message:
 ./bootstrap: done.  Now you can run './configure'.
 ```
 
+
 Compiling from source
-=====================
+---------------------
 First, obtain source either following the directions above to prepare a checkout of the source repository for compilation or by downloading a distribution tarball. 
 
 If all libraries are installed in standard system locations, you should be able to configure and compile by running:
