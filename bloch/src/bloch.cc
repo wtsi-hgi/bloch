@@ -24,12 +24,14 @@
  *
  */
 
+/* C includes */
 #include "config.h"
 
 #include <err.h>
 #include <errno.h>
 #include <getopt.h>
 #include <locale.h>
+#define __STDC_LIMIT_MACROS
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -42,13 +44,15 @@
 
 #include "gettext.h"
 
-/* bloch includes */
 extern "C" {
+/* bloch includes */
 #include "blog.h"
 }
 
 #include <htslib/vcf.h>
 
+
+/* C++ includes */
 #include <lemon/list_graph.h>
 #include <lemon/lgf_writer.h>
 
