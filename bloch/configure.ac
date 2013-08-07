@@ -54,15 +54,35 @@ gl_INIT
 
 # Checks for zlib and adds -lz to LIBS and defined HAVE_LIBZ
 AC_ARG_VAR([ZLIB_CFLAGS],[C compiler flags for ZLIB])
-AC_ARG_VAR([ZLIB_LDFLAGS],[linker flags for ZLIB])
+AC_ARG_VAR([ZLIB_LIBS],[linker flags for ZLIB])
 AC_MSG_CHECKING([for zlib])
-AC_CHECK_LIB([z], [zlibVersion], [], [AC_MSG_FAILURE([zlib is required but check for zlibVersion function failed! (is ZLIB_LDFLAGS set correctly?)])], [${ZLIB_LDFLAGS}])
+AC_CHECK_LIB([z], [zlibVersion], [], [AC_MSG_FAILURE([zlib is required but check for zlibVersion function failed! (is ZLIB_LIBS set correctly?)])], [${ZLIB_LIBS}])
 
 # Check for htslib (which requires zlib)
 AC_ARG_VAR([HTSLIB_CFLAGS],[C compiler flags for HTSLIB])
-AC_ARG_VAR([HTSLIB_LDFLAGS],[linker flags for HTSLIB])
+AC_ARG_VAR([HTSLIB_LIBS],[linker flags for HTSLIB])
 AC_MSG_CHECKING([for htslib])
-AC_CHECK_LIB([hts], [hts_open], [], [AC_MSG_FAILURE([htslib is required but check for hts_open function failed! (is HTSLIB_LDFLAGS set correctly?)])], [${LIBS} ${HTSLIB_LDFLAGS} ${ZLIB_LDFLAGS} ${LTLIBMULTITHREAD}])
+AC_CHECK_LIB([hts], [hts_open], [], [AC_MSG_FAILURE([htslib is required but check for hts_open function failed! (is HTSLIB_LIBS set correctly?)])], [${LIBS} ${HTSLIB_LIBS} ${ZLIB_LIBS} ${LTLIBMULTITHREAD}])
+
+
+# Check for LEMON (no C bindings, only C++, so cannot use AC_CHECK_LIB)
+AC_ARG_VAR([LEMON_CFLAGS],[C compiler flags for LEMON])
+AC_ARG_VAR([LEMON_LIBS],[linker flags for LEMON])
+PKG_CHECK_MODULES([LEMON], [lemon >= 1.2.3])
+
+#AC_MSG_CHECKING([for lemon])
+#AX_CXX_CHECK_LIB([emon], [lemon::ListDigraph], [], [AC_MSG_FAILURE([lemon is required but check for lemon::ListDigraph failed! (is LEMON_LIBS set correctly?)])])
+#, [${LIBS} ${HTSLIB_LIBS} ${ZLIB_LIBS} ${LTLIBMULTITHREAD}])
+#AC_LANG(C++)
+#SAVED_LIBS=$LIBS
+#LIBS="${LIBS} ${LEMON_LIBS} ${LTLIBMULTITHREAD}"
+#AC_LINK_IFELSE(
+#	[AC_LANG_PROGRAM([#include <lemon/list_graph.h>],
+#			 [lemon::ListDigraph dummy])],
+#	[],
+#	[AC_MSG_FAILURE([lemon is required but check for lemon::ListDigraph failed! (is LEMON_LIBS set correctly?)])])
+#LIBS=$SAVED_LIBS
+#AC_LANG_POP([C++])
 
 
 # Setup GetText for internationalisation
