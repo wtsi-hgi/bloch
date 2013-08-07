@@ -30,7 +30,9 @@ cd bloch/bloch
 The autogen.sh script will bootstrap the checked-out sources to prepare them for compilation (in particular it will clone the current version of gnulib into the repository and generate the ./configure script using autoreconf. 
 
 When it has completed successfully, you should now see the message:
-    ./bootstrap: done.  Now you can run './configure'.
+```
+./bootstrap: done.  Now you can run './configure'.
+```
 
 Compiling from source
 =====================
