@@ -24,14 +24,48 @@
  *
  */
 
+#include "config.h"
+
+#include <err.h>
+#include <errno.h>
 #include <getopt.h>
+#include <locale.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include <strings.h>
+
+/* gnulib headers */
+#include "error.h"
+#include "progname.h"
+#include "xalloc.h"
+
+#include "gettext.h"
+
+/* bloch includes */
+extern "C" {
+#include "blog.h"
+}
 
 #include <htslib/vcf.h>
 
 #include <lemon/list_graph.h>
 #include <lemon/lgf_writer.h>
 
+void print_usage() 
+{
+  fprintf(stderr, gettext("Usage: %s [options] <input(bcf|vcf)>\n"), program_name);
+}
 
+void print_help() 
+{
+  print_usage();
+  fprintf(stderr, gettext("Options: \n"));
+  fprintf(stderr, gettext("  -o, --vcf_out          Filename for output (bcf|vcf)\n"));
+  fprintf(stderr, gettext("  -h, --help             Print short help message and exit\n"));
+  fprintf(stderr, gettext("  -v, --verbose[=level]  Increase/Set level of verbosity (-vvv sets level 3 as does --verbose=3)\n"));
+  fprintf(stderr, gettext("  -d, --debug            Print debugging messages to stderr (also sets -v 3)\n"));
+}
 
 int main(int argc, char** argv) 
 {
@@ -58,12 +92,11 @@ int main(int argc, char** argv)
  	  {"verbose",           no_argument,		0,	'v'},
 	  {"debug",		no_argument,		0,	'd'},
 	  {"help",		no_argument,		0,	'h'},
-	  {"vcf_in",	        required_argument,	0,	'i'},
 	  {"vcf_out",	        required_argument,	0,	'o'},
 	  {0, 0, 0, 0}
 	};
       
-      c = getopt_long(argc, argv, "vdhi:o:", bloch_options, &option_index);
+      c = getopt_long(argc, argv, "vdho:", bloch_options, &option_index);
       
       if (c < 0)
 	break;
@@ -88,9 +121,6 @@ int main(int argc, char** argv)
 	  print_help();
 	  exit(0);
 	  break;
-	case 'i':
-	  vcf_in_file = xstrdup(optarg);
-	  break;
 	case 'o':
 	  vcf_out_file = xstrdup(optarg);
 	  break;
@@ -109,6 +139,15 @@ int main(int argc, char** argv)
       error(0, 0, "verbosity set to %u", verbosity);
     }
   
+  /* get remaining command-line argument (input file name) */
+  if (optind + 1 != argc) {
+    print_usage();
+    err(1, gettext("one filename should be given as an argument following the options"));
+  } else {
+    vcf_in_file = xstrdup(argv[optind++]);
+    blog(3, gettext("vcf_in_file set to %s"), vcf_in_file);
+  }
+
   lemon::ListGraph g;
   g.addNode();
   
