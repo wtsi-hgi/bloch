@@ -1,0 +1,61 @@
+This is BibTeX, Version 0.99d (TeX Live 2012)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: Report.aux
+The style file: plain.bst
+Database file #1: Bibliography.bib
+Unbalanced braces---line 13 of file Bibliography.bib
+ :  title = "Efficient Multilocus Association Testing for Whole Genome Association Studies Using Localized Haplotype Clustering
+ :                                                                                                                             },
+I'm skipping whatever remains of this entry
+I was expecting a `,' or a `}'---line 23 of file Bibliography.bib
+ :  
+ :  title = "Rapid and Accurate Haplotype Phasing and Missing-Data Inference for Whole-Genome Association Studies By Use of Localized Haplotype Clustering ",
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
+I was expecting a `,' or a `}'---line 43 of file Bibliography.bib
+ :  
+ :  title = "Simultaneous Genotype Calling and Haplotype Phasing Improves Genotype Accuracy and Reduces False-Positive Associations for Genome-wide Association Studies ",
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
+You've used 1 entry,
+            2118 wiz_defined-function locations,
+            505 strings with 4143 characters,
+and the built_in function-call counts, 327 in all, are:
+= -- 31
+> -- 7
+< -- 0
++ -- 3
+- -- 2
+* -- 27
+:= -- 59
+add.period$ -- 3
+call.type$ -- 1
+change.case$ -- 4
+chr.to.int$ -- 0
+cite$ -- 1
+duplicate$ -- 11
+empty$ -- 30
+format.name$ -- 2
+if$ -- 66
+int.to.chr$ -- 0
+int.to.str$ -- 1
+missing$ -- 1
+newline$ -- 8
+num.names$ -- 2
+pop$ -- 2
+preamble$ -- 1
+purify$ -- 3
+quote$ -- 0
+skip$ -- 7
+stack$ -- 0
+substring$ -- 32
+swap$ -- 1
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 4
+warning$ -- 0
+while$ -- 3
+width$ -- 2
+write$ -- 13
+(There were 3 error messages)

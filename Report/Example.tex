@@ -1,0 +1,410 @@
+\documentclass[a4paper,12pt,twoside,abstraction,titlepage]{article}
+
+\usepackage{verbatim}
+\usepackage{latexsym}
+\usepackage{exscale}
+\usepackage{makeidx}
+\usepackage{textcomp}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage[retainorgcmds]{IEEEtrantools}
+\usepackage{mathrsfs}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{enumerate}
+\usepackage{url}
+
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{cor}[thm]{Corollary}
+\newtheorem{lem}[thm]{Lemma}
+
+\theoremstyle{remark}
+\newtheorem{rem}{Remark}[section]
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+
+\captionsetup{figurewithin=section,tablewithin=section,justification=centering}
+
+
+\title{\Large \bf Introduction to the Mathematics of Tiling}
+\author{Student ID: 1004059}
+
+\linespread{1.2}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+The aim of this document
+\end{abstract}
+
+\clearpage
+\setcounter{tocdepth}{2}
+\tableofcontents
+
+\newpage
+\listoffigures
+ 
+\newpage
+
+\section{Introduction}
+\subsection{History and Background}
+Tiling is a technique of covering a flat surface without gaps or overlaps and occurs in the world around us.~\cite{scienceu} It is both a natural and man-made phenomena. Examples of tilings include the use of paving stones to tile a road, brickwork of buildings and the tessellating hexagons of honeycombs of bees.
+
+Every known human civilization has used tiles to create decorative patterns~\cite[\S I]{branko} but it was the Greeks who first made it into a form of art and created exact geometric patterns and detailed scenes of animals and people.~\cite{mosaics}  Many other societies used tiling as a form of art including the Egyptians, Moors, Persians, Byzantine, Arabic, Japanese, Chinese and the Romans who extensively used mosaics across their empire.~\cite{totally} The English word tessellate is derived from the Latin word \emph{tesserae} which means a small stone cube and also the Greek word \emph{tessaragonos} which means a four-cornered or oblong shaped object.~\cite{wordquests}
+
+It was Islamic artists however who concentrated on using fewer shapes and colours to create abstract geometric designs to decorate mosques and other architectural works~\cite[\S I]{branko} because their religion forbade them from depicting people or living things.~\cite{totally} Some of the most complex patterns appear to use only regular polygons but in fact some of the polygons have been modified very subtly so that the tiles can fit and the changes are so slight that the irregularities are not visible to the human eye. The most renown examples of Arabic tessellating patterns is in Alhambra Palace in the south of Spain.~\cite{totally}
+
+The Dutch graphic artist Escher was inspired by the geometric tessellations of the Alhambra Palace and as a result created hundreds of tessellated patterns as well as imaginative artwork of tessellating animals, people, objects and geometric shapes. He created a technique which adopted a highly mathematical approach and a notation which he invented himself.~\cite{escher} Although Escher had no formal mathematical training, his artwork and techniques demonstrate many ideas that scientists and mathematicians only discovered after Escher did. As an example Escher had already developed techniques which incorporated use of a fundamental region\footnote{In a periodic tiling, the smallest region that would allow the entire tessellation to be created through a set of isometries.~\cite{scienceu}} before research in this area was published.~\cite{totally}
+
+The study of tiling can not only be used for aesthetic purposes and artwork but can also have applications in engineering, for example in the process of manufacturing. If the manufacturing templates tessellate as much as possible then this results in the conservation of sheet material and the reduction of scrap metal. The science of tilings and patterns and their mathematical properties is a fairly recent field of study which has been facilitated by the development of technological tools. Johannes Kepler was one of the first to study the mathematics behind regular and semiregular tessellation in 1619 but his work seems to have been forgotten for almost 300 years. The beginning of the 20$^{th}$ Century marked the start of advanced mathematical analysis of tilings.  The science of tiling has enabled links between mathematics and other disciplines such as physics, crystallography, metallurgy, biology, cryptography, art and architecture.~\cite{totally}
+
+\subsection{Examples of Tilings}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale=0.1965]{intro1}
+\caption{Roman Mosaic 'Cave Canem' from Pompeii~{\cite{UOS}}}
+\end{center}
+\end{figure}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale=0.63]{intro2}
+\caption{Tile Pattern from Alhambra Palace in Spain~\cite{UOC}}
+\end{center}
+\end{figure}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale=0.3]{intro3}
+\caption{Fish, Bat and Lizard Tessellation by Escher~\cite{escher1}}
+\end{center}
+\end{figure}
+
+\clearpage
+\section{Fundamental Concepts and Terminology}
+\subsection{Mathematical Definition of Tiling}
+
+Before being able to apply mathematical techniques to tiling, we must first define fundamental terminology and notation, and also discuss assumptions which are being made.
+
+\begin{definition}\label{tiling}
+A \emph{plane tiling} $\mathscr{T}$ is a countable family of closed sets \\$\mathscr{T} = \{T_1, T_2, \ldots\}$ which cover the plane without gaps or overlaps.~\cite[\S 1.1]{branko}
+\end{definition}
+
+\noindent By referring to the \emph{plane} we assume the Euclidean plane denoted $\mathbb{R}^2$ .
+
+\begin{definition}\label{tile}
+The collection of subsets $\{T_1, T_2, \ldots\}$ of the plane $\mathscr{T}$ are known as \emph{tiles}.
+\end{definition}
+The following conditions in the definition of tiling are explained:
+
+\begin{enumerate}
+\item \emph{countable}: a family of sets which are either finite or denumerable\footnote{A set is denumerable if and only if it can be put in a one-to-one correspondence with the natural numbers.~\cite{wolfram}}~\cite{wolfram}
+\item \emph{closed set}: a set which contains all its limit points~\cite{wolfram}
+\item \emph{without gaps}: the union of all tiles is the whole plane and the interiors of the sets $T_i$ are pairwise disjoint~\cite[\S 1.1]{branko}
+\item \emph{without overlaps}: the intersection of two distinct tiles has zero area
+\end{enumerate}
+
+\noindent This definition of a tiling however is too general and for the purposes of this essay, we must also assume unless otherwise stated that a tile is a closed topological disk which means a tile is any set whose boundary is a single simple closed curve. More explicitly this means a curve which has no endpoints and encloses an area, and which has no branches or crossings. We also assume for this essay that every tiling is \emph{locally finite\footnote{A tiling $\mathscr{T}$ is locally finite if every circular disk, centered at any point, meets only a finite number of tiles.~\cite[\S 3.1]{branko}}} and does not contain a \emph{singlular point\footnote{A singular point is located where every circular disk centred at that point meets an infinite number of tiles.~\cite[\S 3.1]{branko}}}.~\cite[\S 1.1, \S 3.1]{branko}\\\\
+
+\noindent This omits the following families of sets:
+
+\begin{enumerate}
+\item unbounded tiles 
+\item tiles which consist of separate pieces and are not connected
+\item tiles which contain at least one hole and are not simply connected
+\item tiles which are partly made up of line segments and arcs
+\item tiles which become disconnected when a finite set of points are deleted
+\end{enumerate}
+
+\noindent All tiles in the following figure would be omitted with the final criteria of a tile being a close topological disk.
+
+\begin{figure}[!hbtp]
+\makebox[\textwidth]{\framebox[5cm]{\rule{0pt}{5cm}}}
+\caption{Examples of sets which are not topological disks~\cite[p17]{branko}}
+\end{figure}
+
+
+\subsection{Basic Definitions}
+\begin{definition}\label{edgevertex}
+If the intersection between two distinct tiles ($T_i \cap T_j$) is a single point, this point is known as a \emph{vertex}. If the intersection is an arc, the it is known as an \emph{edge}.~\cite[\S 1.1]{branko}
+\end{definition}
+
+\noindent It is important to remember that that an edge of a tiling may encompass more than one side of a tile, and corners of a tile may not necessarily be a vertex of the tiling. In this essay we will only consider tiles which have a finite number of edges and a finite number of vertices.
+
+\begin{definition}\label{valence}
+A vertex is the endpoint of a number of edges. This number is called the \emph{valence} of a vertex.~\cite[\S 1.1]{branko}
+\end{definition}
+
+\noindent The valence of a vertex is always at least three because from the definition a vertex you can deduce that it must be the intersection of at least three tiles. The intersection of two tiles alone would not be a single point.
+
+\begin{definition}\label{jvalence}
+If every vertex of a tiling $\mathscr{T}$ has the same valence, $j$, then the tiling is known as a $j$\emph{-valent} tiling.~\cite[\S 1.1]{branko}
+\end{definition}
+
+\noindent Regular\footnote{A regular tiling is one in which every tile is the same regular polygon.~\cite{branko}} tilings are $j$\emph{-valent} where $j$ coincides with the number of sides of the polygon tile.
+
+
+\begin{definition}
+An \emph{edge-to-edge} tiling is one where the corners and sides of a polygon coincide with the vertices and edges of the tiling.~\cite[\S 1.1]{branko}
+\end{definition}
+
+\noindent Regular tilings are examples of edge-to-edge tilings. There are no edges of the tiling which encompass more than one side of a polygon and there are no corners of a polygon which are not also vertices.
+
+\begin{definition}
+Two tilings $\mathscr{T}_1$ and $\mathscr{T}_2$ are \emph{congruent} if $\mathscr{T}_1$ can be transformed into $\mathscr{T}_2$ by an isometry\footnote{An isometry is a rigid motion of the plane which preserves distance.}.~\cite[\S 1.1]{branko}
+\end{definition}
+
+\begin{definition}
+Two tilings $\mathscr{T}_1$ and $\mathscr{T}_2$ are \emph{equal} if $\mathscr{T}_1$ can be changed in scale so that it is congruent to $\mathscr{T}_2$.~\cite[\S 1.1]{branko}
+\end{definition}
+
+\begin{definition}
+In a tiling $\mathscr{T}$ there exists the smallest collection of tiles $\mathscr{P} \subset \mathscr{T}$, such that every tile in $\mathscr{T}$ is congruent to some tile in $\mathscr{P}$.  The tiles in $\mathscr{P}$ are known as the \emph{prototiles} of $\mathscr{T}$.~\cite[\S 1.1]{scienceu, branko}
+\end{definition}
+
+\begin{definition}
+A tiling which has a single prototile is known as a \emph{monohedral} tiling.~\cite[\S 1.2]{branko}
+\end{definition}
+
+\noindent This terminology can be extended to tilings which have more than one prototile, for example \emph{dihedral} for tilings with two prototiles, \emph{trihedral} for tilings with three prototiles, \emph{4-hedral}, \ldots, \emph{n-dots}, for tilings with four, \ldots, $n$ distinct prototiles.
+
+\begin{definition}
+A monohedral tiling where the prototile is a regular polygon is known as a \emph{regular} tiling.~\cite[\S 1.2]{branko}
+\end{definition}
+
+\noindent There exist only three regular tilings.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale=0.6]{fig22}
+\caption{Three regular tilings\label{regular}~\cite{cornell}}
+\vspace{-20pt}
+\end{center}
+\end{figure}
+
+
+\subsection{Symmetry}
+In order to understand symmetries of a set we must first define isometries.
+\begin{definition}
+An \emph{isometry} is a linear transformation which preserves length.~\cite{wolfram}
+\end{definition}
+
+\noindent Every isometry is one of four types; Rotation, Translation, Reflection and Glide Reflection. The following figure illustrates the four types of isometry.
+
+\begin{figure}[h]
+\makebox[\textwidth]{\framebox[6cm]{\rule{0pt}{7cm}}}
+\caption[Four types of plane isometry{~\cite[\S 1.3]{branko}}]{Four types of plane isometry; a. rotation, b. translation, \\c. reflection, d. glide-reflection~\cite[p26]{branko}}
+\end{figure}
+
+\noindent If the isometry is denoted $\sigma:\mathbb{R}^2 \to \mathbb{R}^2$, and $A$ and $B$ are two distinct points, then $\vert A - B\vert = \vert\sigma(A) - \sigma(B)\vert$.
+
+\begin{definition}
+A \emph{direct} isometry is an orientation-preserving isometry.
+\end{definition}
+
+\noindent Rotations and translations are orientation-preserving because if points $ABC$ are clockwise vertices of a triangle, under a direct isometry the image of the triangle would also have the points $ABC$ in a clockwise order.~\cite[\S 1.3]{branko}
+
+\begin{definition}
+An \emph{indirect} isometry is not orientation-preserving and the orientation is reversed.~\cite{wolfram}
+\end{definition}
+
+\noindent Reflections and glide reflections are indirect isometries because if points $ABC$ are clockwise vertices of a triangle, under an indirect isometry the image of the triangle would have the points $ABC$ in a counter-clockwise order. The image under an indirect isometry would be a reflection.~\cite[\S 1.3]{branko}
+
+\begin{definition}
+The \emph{symmetry} of a set S is an isometry $\sigma$ which maps S onto itself such that $\sigma S = S$.~\cite[\S 1.3]{branko}
+\end{definition}
+
+\noindent There are four types of symmetry corresponding to the four types of isometries. There is an isometry that maps every point onto itself. This is known as the identity isometry and is the symmetry of every set. The identity isometry can be achieved by rotating the set by $2\pi$ which would return it to its original position.
+
+In the example of a circle, any rotation about the centre is a symmetry. As is any reflection in any line which runs through the centre of the circle.
+
+In the example of a square, the reflections in the four lines are symmetries as well as the identity isometry, and the rotations through angles $\frac{\pi}{2}$, $\pi$ and $\frac{3\pi}{2}$ in either the clockwise or counter-clockwise direction about the centre. The centre can be called a centre of 4-fold rotational symmetry. Centre of n-fold rotational symmetry refers to the centre of a set where rotations through $\frac{2\pi}{n}$ about the centre are symmetries.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale=0.65]{fig24}
+\caption{Symmetries of the square\label{square}~\cite{square}}
+\vspace{-15pt}
+\end{center}
+\end{figure}
+
+\noindent It is apparent that many combinations of isometries can be performed one after the other to achieve the same result. Reflecting a square by the vertical line of symmetry followed by reflecting it by the horizontal line of symmetry is equivalent to rotating the square by $\pi$. However these are not regarded as different symmetries. A counter-clockwise rotation by $\theta$ is not distinguished from a clockwise rotation by $2\pi - \theta$. 
+
+Because of the algebraic property that the composition of two isometries results in another isometry, the set of symmetries of $\mathscr{T}$ can be regarded as a group.
+
+\begin{definition}
+The collection of symmetries $S(\mathscr{T})$ of $\mathscr{T}$ is known as a \emph{symmetry group}.~\cite[\S 1.3]{branko}
+\end{definition}
+
+\begin{definition}
+The \emph{order} of the symmetry group is the number of symmetries in $S(\mathscr{T})$.~\cite[\S 1.3]{branko}
+\end{definition}
+
+\noindent The order of the symmetry group of a square is eight.
+
+\begin{definition}
+An isometry $\sigma$ is a \emph{symmetry of} $\mathscr{T}$ if it maps every tile $\mathscr{T}$ onto a tiles of $\mathscr{T}$.~\cite[\S 1.3]{branko}
+\end{definition} 
+
+\noindent For example in the monohedral regular triangle tiling in figure \ref{triangles}, all four types of symmetries can be observed. 
+
+\begin{figure}[h]
+\begin{center}
+\makebox[\textwidth]{\framebox[5cm]{\rule{0pt}{5cm}}}
+\caption{Symmetries of a monohedral regular tiling\label{triangles}~\cite[p28]{branko}}
+\vspace{-15pt}
+\end{center}
+\end{figure}
+
+\noindent There exists rotational symmetry through angles $\frac{2\pi}{3}$ and $\frac{4\pi}{3}$ around the centre of 3-fold rotational symmetry represented by an open triangle. There is translational symmetry where each black triangle can be translated onto each another. Reflective symmetry is represented by the solid lines and glide reflective symmetry is represented by the dashed lines.
+
+\begin{definition}
+A tiling which admits a symmetry in addition to the identity symmetry is known as \emph{symmetric}.~\cite[\S 1.3]{branko}
+\end{definition} 
+
+It is important to distinguish the difference between the symmetry of a tile and the symmetry of a tiling. In a monohedral tiling the symmetry of an individual tile may not also be the symmetry of the tiling. This is illustrated in the following figure.\\
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale=0.65]{fig26}
+\caption{Monohedral tiling\label{mono}~\cite{cornell}}
+\vspace{-15pt}
+\end{center}
+\end{figure}
+
+\noindent A square has eight symmetries but this tiling is not symmetric. The only symmetry of this tiling is the identity symmetry.~\cite[\S 1.3]{branko}
+
+\newpage
+\section{Periodic Tilings}
+\begin{definition}
+If a symmetric tiling $\mathscr{T}$ has a symmetry group $S(\mathscr{T})$ which contains at least two translations in non-parallel directions then the tiling is \emph{periodic}.~\cite[\S 1.3]{branko}
+\end{definition} 
+
+\noindent Periodic tilings repeat in a regular way. This means that the tiling repeats in two independent directions. Periodic tilings have the property that a \emph{lattice} in the form of a parallelogram tiling can be constructed and layered over the top of the tiling. The lattice has the property that the configuration inside each parallelogram of the tiling is identical and the whole tiling can be generated by translating and copying the single parallelogram. This region is called the \emph{fundamental domain}. 
+
+Fundamental domains are important in the study of the seventeen wallpaper groups. A wallpaper groups is a mathematical classification of a repetitive pattern and are the most symmetric tilings possible. Each wallpaper group is constructed from a single fundamental domain and a given symmetry group. More information on wallpaper groups can be found in~\cite[\S 1.4]{branko} and a derivation can be found in~\cite[\S 11]{martin}.
+
+\subsection{Regular Tilings}
+\begin{definition}
+A tiling in which the prototiles are regular polygons is known as a \emph{tessellation}.~\cite{wolfram}
+\end{definition} 
+
+\begin{definition}
+Edge-to-edge monohedral tessellations are known as \emph{regular}.
+\end{definition} 
+
+\begin{thm}
+There exist only three monohedral regular tessellations which are shown in figure \ref{regular}. They each have a prototile consisting of a triangle, a rectangle and a hexagon.
+\end{thm}
+
+\begin{proof}
+If $p$ is the number of sides of the regular polygon, then the interior angle, $\alpha$ at each vertex is 
+\begin{equation*}
+\alpha = \frac{p - 2}{p}\cdot\pi
+\end{equation*}
+If $q$ is the number of polygons meeting at a single vertex. Then the product $\alpha q$ is equal to $2\pi$.
+\begin{IEEEeqnarray*}{rCl}
+\frac{p - 2}{p} \pi \cdot q & = & 2\pi \\
+(p - 2)q & = & 2p \\
+pq - 2q + 4 & = & 2p + 4 \\
+q(p - 2) - 2(p - 2) & = & 4 \\
+(p - 2)(q - 2) & = & 4 \\
+\end{IEEEeqnarray*}
+There are three solutions to this equation;\\\\
+$p = 3, q = 6;\\
+p = 4, q = 4;\\
+p = 6, q = 3.$ \\\\
+Only three tessellations are possible and at each vertex the following occurs:\\\\
+6 equilateral triangles\\
+4 squares\\
+3 regular hexagons\footnote{~\cite{m}}
+\end{proof}
+
+\begin{rem}
+The regular tessellations are notated as follows;\\
+($3^6$), ($4^4$), ($6^3$) respectively.
+\end{rem}
+
+\subsection{Archimedian Tessellation}
+\begin{definition}
+An \emph{Archimedian} or \emph{semi-regular} tessellation is an edge-to-edge polyhedral tessellation such that every vertex is surrounded by the same polygons in the same order.
+\end{definition}
+
+\noindent There exist eight non-regular Archimedian tessellations. The interior angle $\alpha$ of a $p$-sided polygon is equal to 
+
+\begin{equation*}
+\alpha = \pi\cdot\frac{p - 2}{p} = \pi - \frac{2\pi}{p} = 2\pi\left(\frac{1}{2} - \frac{1}{p}\right)
+\end{equation*}
+
+\noindent If there are $n$ polygons at one vertex, the interior angles must add up to $2\pi$.
+
+\begin{IEEEeqnarray*}{rCl}
+2\pi\left(\left(\frac{1}{2} - \frac{1}{p_1}\right) + \cdots + \left(\frac{1}{2} - \frac{1}{p_n}\right)\right) & = & 2\pi \\
+\frac{n}{2} - \frac{1}{p_1} - \cdots - \frac{1}{p_n} & = & 1\\
+\frac{1}{p_1} + \cdots + \frac{1}{p_n} & = & = \frac{n}{2} - 1
+\end{IEEEeqnarray*}
+
+\noindent The means you need $n$ whole numbers whose reciprocals add up to $\frac{n}{2} - 1$.\\
+
+\noindent The solutions are as follows and are illustrated in the figure below;\\
+($3^6$), ($3^4.6$), ($3^3.4^2$), ($3^2.4.3.4$), ($3.4.6.4$), ($3.6.3.6$), ($3.12^2$), ($4^4$), ($4.6.12$), ($4.8^2$) and ($6^3$)
+
+\begin{figure}[h]
+\begin{center}
+\makebox[\textwidth]{\framebox[5cm]{\rule{0pt}{8cm}}}
+\caption{Eleven Archimedian Tessellations\label{arc}~\cite[p63]{branko}}
+\vspace{-15pt}
+\end{center}
+\end{figure}
+
+\subsection{Pythagorus' Theorem}
+
+\newpage
+\section{Aperiodic Tilings}
+a
+\newpage
+\subsection{Wang's Conjecture}
+a
+\newpage
+\subsection{Penrose Tilings}
+a
+
+
+\newpage
+\begin{thebibliography}{99}
+\bibitem{scienceu} \emph{Science U.} A Geometry Technologies web resourse. \url{http://www.scienceu.com/geometry/articles/tiling/}
+
+\bibitem{branko} \emph{Tilings and Patterns.} Gr\"{u}nbaum and Shephard. \emph{New York: W. H. Freeman 1987.} 1st Edition.
+
+\bibitem{mosaics} \emph{Mosaics and Mosaic Making.} A Joy of Shards web resourse. \url{http://www.thejoyofshards.co.uk/history/index.shtml}
+
+\bibitem{totally} \emph{Totally Tessellated.} Web resourse. \url{http://library.thinkquest.org/16661/}
+
+\bibitem{wordquests} \emph{Word Quests for Word Seekers.} Online English word origins dictionary. \url{http://wordquests.info/cgi/ice2-for.cgi?file=/hsphere/local/home/scribejo/wordquests.info/htm/L-Gk-tessera.htm&HIGHLIGHT=tessara}
+
+\bibitem{escher} \emph{Maurits Cornelius Escher.} History of Mathematics archive from the School of Mathematics and Statistics, University of St Andrews, Scotland. \url{http://www-history.mcs.st-andrews.ac.uk/Biographies/Escher.html}
+
+\bibitem{UOS} \emph{Classissist's Picture Galley.} University of South Aftica web resourse. \url{http://www.unisa.ac.za/Default.asp?Cmd=ViewContent&ContentID=15932}
+
+\bibitem{UOC} \emph{John Baez's Alhambra Gallery.} Professor's blog from University of California. \url{http://math.ucr.edu/home/baez/}
+
+\bibitem{escher1} \emph{Jill Britton's Escher Gallery.} Web resourse. \url{http://britton.disted.camosun.bc.ca/escher/jbescher.htm}
+
+\bibitem{wolfram} \emph{Wolfram MathWorld.} Web resource. \url{http://mathworld.wolfram.com/}
+
+\bibitem{cornell} \emph{An Introduction to Tilings.} Cornell student project. \url{http://www.math.cornell.edu/~mec/2008-2009/KathrynLindsey/PROJECT/Page0.htm}
+
+\bibitem{square} \emph{Clipart ETC.} Educational Clipart web resourse. \url{http://etc.usf.edu/clipart/76000/76095/76095_square.htm}
+
+\bibitem{martin} \emph{Transformation Geometry: An Introduction to Symmetry.} George E. Martin. \emph{Springer Verlag, 1982}
+
+\bibitem{m} \emph{Mathematics and Multimedia.} Web resourse. \url{http://mathandmultimedia.com/mathematics/}
+
+\end{thebibliography}
+
+\end{document}
