@@ -1,15 +1,21 @@
 \documentclass[a4paper,12pt,twoside,abstraction,titlepage]{article}
 
-
 \usepackage{verbatim}
 \usepackage{latexsym}
 \usepackage{exscale}
 \usepackage{makeidx}
 \usepackage{textcomp}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage[retainorgcmds]{IEEEtrantools}
+\usepackage{mathrsfs}
 \usepackage{graphicx}
 \usepackage{caption}
 \usepackage{enumerate}
 \usepackage{url}
+\usepackage{booktabs}
+\usepackage{wrapfig}
 
 
 
@@ -59,36 +65,90 @@ Testing association on just the SNPs which are directly assayed ({\bf a}) may no
 \vspace{-10pt}
 \end{figure}
 
-In low coverage whole genome sequencing, such as in the 1000 Genomes Project, imputation is used to assist genotype likelihood estimation and calling.  Relatively small amounts of sequence data across many individuals is combined to accurately estimate the genotypes for each sample.  In other words, the imputation algorithms use the sample data itself as its own reference panel \cite{1000genomes}.  Imputation can also be extended to include non-SNP variation such as copy number variation, classical human leukocyte antigen alleles, and short insertions and deletions (indels) \cite{review2010}.
+In low coverage whole genome sequencing, such as in the 1000 Genomes Project \cite{1000genomes}, imputation is used to assist genotype likelihood estimation and calling.  Relatively small amounts of sequence data across many individuals is combined to accurately estimate the genotypes for each sample.  In other words, the imputation algorithms use the sample data itself as its own reference panel.  Imputation can also be extended to include non-SNP variation such as copy number variation, classical human leukocyte antigen alleles, and short insertions and deletions (indels) \cite{review2010}.
 
 There are many different methods for imputation based on different statistical models, but imputation algorithms can be divided into two main categories: those which take into account all observed genotypes during its computation of a single sample (IMPUTE, MACH, fastPHASE/BIMBAM), and those which only look at a window of markers either side of the missing genotype (BEAGLE, PLINK) \cite{review2009}.  Using all observed genotypes is computationally expensive but in many cases can achieve a more accurate result.  Factors which affect imputation accuracy include the size and choice of reference panel; the difference in genetic diversity between the study population and the reference panel; use of tagging methods for SNP array design.  In almost all cases, the larger the reference panel, the more accurate the imputation.  The algorithm implemented in this report uses a probabalistic graphical model and is described in the BEAGLE paper \cite{beagle3}.
 
 
 \newpage
-\section{Method}
-The BEAGLE algorithm is structure in a similar way expectation-maximization (EM) algorithm.  An initial estimate of haplotype phase is obtained and then at each iteration, the model is fit and an improved estimate of haplotype phase is sampled.  The final output haplotypes are obtained by calculating the most likely based on the current model.
+\section{Methods}
+The BEAGLE algorithm has a similar structure to the expectation maximization (EM) algorithm \cite{EMalgorithm}.  An initial estimate of haplotype phase is obtained for each individual and then at each iteration, the model is fit and an improved estimate of haplotype phase per individual is sampled.  The final output haplotypes are obtained by calculating the most likely haplotype pairs per individual conditional on the model in the final iteration.
 
-The process can therefore be split into 3 sections: model building, where a probabilistic graphical model is used to implicitely cluster haplotypes; sampling, where haplotypes are re-estimated and used as input into the next model build; and maximization, where the most likely haplotypes are extracted based on the current model.
+The process can therefore be split into 3 sections: model building, where a probabilistic graphical model is used to implicitely cluster haplotypes; sampling, where haplotypes are re-estimated and used as input into the next model build; and a maximization step, where the most likely haplotypes are computed based on the current model.
 
-
-
-
+The haplotype-clustering model which is built defines a Hidden Markov Model (HMM) where a modified forward-backward can be used for the sampling step and the Viterbi algorithm can be used for the final stage.  The BEAGLE recommendation is to run 10 iterations of the model building and sampling steps before carrying out the Viterbi algorithm.
 
 
-
-
-
-
-
-
+\newpage
 \subsection{Model Building}
+The model is represented as a directed acyclic graph.  Assuming no missing alleles and a number of samples genotyped at $M$ markers the directed graph has the following properties:
+
+\vspace{-5pt}
+\begin{enumerate}
+\itemsep0pt
+\item The graph is levelled with $M+1$ levels. Each node of the graph is a member of a level that corresponds to the position in the sequence of markers.
+\item At level $0$, there is one root node which has no incoming edges.  At level $M$ there is one terminal node which has no outgoing edges.
+\item All incoming edges to a node at level $m$ have a parent node at level $m-1$.  All outgoing edges from the node at level $m$ have a child node at level $m+1$.
+\item Each edge at level $m$ is marked by a single allele $a$.  Two edges originating from the same parent node can not be labelled with the same allele.
+\item There exists a path from the root node to the terminal node for each haplotype in the samples such that the $m$th allele of the haplotype is the label of the $m$th edge of the path.
+\end{enumerate}
+
+
+NOTES
+When two edges are directed inot the same node, this node represents the union of histories represented by the incoming edges. This represents historical recombination and in terms of the probabilistic model, this represents the Markov property where the sequence of alleles two before the node is independent of the sequence of markers two after the node????? not sure about this reworded in beagle 3 paper
+Example of conditional probability between markers in beagle 1 paper
+
+A node represents represents a collection of possible allele sequences up to the marker level.
+An edge represents a cluster of haplotypes which have allele $a$ at position $m$ and are similar enough locally to be grouped together at that position
+
+Node markov property. recombination. sequence of alleles before node 
+
+
+END OF NOTES
+
+\begin{figure}[htp]
+\centering
+\begin{tabular}{lc}
+\toprule
+Haplotype & Count \\
+\midrule
+1111 & 21\\ 
+1112 &  79\\
+1122 & 95\\
+1221 & 116 \\
+2111 & 25\\
+2112 & 112\\
+2122 & 152\\
+\bottomrule 
+\end{tabular}
+\vspace{5pt}
+\caption{Summary genotype data from 300 individuals}
+
+\vspace{-5pt}
+\end{figure}
+
+
+The model building algorithm will be exemplified using data in Figure 2.   The algorithm begins by inserting genotype data from each indivudal into the graph.  The data is processed a marker at a time.  If the phase is not known, the data is randomly phased at each marker.  If the marker is missing, the marker is randomly imputed based on population allele frequencies at that marker.  Each path from the root node to the terminal node represents a single haplotype and the results of this process on Figure 2 is shown in Figure 3.
+
+\begin{figure}[ht]
+\vspace{-10pt}
+\begin{center}
+\centerline{\includegraphics[scale=0.08]{fig3}}
+\caption{Tree constructed using summary genotype data in Figure 1. Circles are and edges are lines. Solid edge is the allele 1 and dashed edge represents the allele 2. Numbers above the edges represent counts.  This graph is directional from left to right. \cite{beagle1}}
+
+\end{center}
+\vspace{-25pt}
+\end{figure}
 
 
 
 
-\subsection{Sampling}
+After this tree has been created, the algorithm iterates through each level and merges all pairs of nodes where transition probabilities of all downstream nodes are sufficiently similar.  The merging algorithm is illustrated below using Figure 2 as an example.  All nodes at the final level are merged to create the single terminal node that represents the cluster of all haplotypes after being processed by the model.
 
-\subsection{Maximization}
+\newpage
+\subsection{Forward-Backward Algorithm}
+
+\subsection{Viterbi Algorithm}
 
 
 \subsection{Advantages of BEAGLE algorithm}
@@ -97,13 +157,18 @@ How beagle scales in number of samples and number of markers
 Notes:
 Why the beagle model is good
 
-Does not need any prior informatino about haplotype frequency distribution. Models which require this type of estimation break down as the number of markers and samples increases because the number of observable haplotypes and the frequencies of these haplotypes become too small to estimate directly. If all feasible haplotypes are considered then this is very computationally expensive.
+Does not need any prior information about haplotype frequency distribution. Models which require this type of estimation break down as the number of markers and samples increases because the number of observable haplotypes and the frequencies of these haplotypes become too small to estimate directly. If all feasible haplotypes are considered then this is very computationally expensive.
 Other models include coalescent models which implies that haplotypes that are similar to the ones we have already seen are more likely to be seen again since changes in haplotypes occur thorugh recombination and mutation. Can produce very accurate results but can be computationally expensive as well
 Other methods have made use of haplotype blocks but althorugh usefuly it does not adequately explain all the corelation struction between markers because LD can extend beyond block boundaries and can have more complex patterns within blocks
 Automatically adapts to the amoung of linkage disequilibrium between markers.  No need to choose haplotype window size or select tagging markers.
 Explain what linkage disequilibrium is - correlation structure between markers
 Using a sliding window approach does not take into account how LD structure varies across the genome or areas where LD does not exist due to recombination hotspots 
 Clusters haplotypes to improve power.
+
+Correlation between markers is a localized phenomenom because LD decays with distance. Needs to be taken into account in phasing algorithms
+
+Markov property
+paper 3
 
 
 How beagle works
@@ -119,6 +184,7 @@ Localized haplotype-cluster model is an empirical LD model that adapts to the lo
 
 \newpage
 \section{Future work}
+Pycuda parallel computation
 
 \newpage
 
@@ -134,6 +200,9 @@ Localized haplotype-cluster model is an empirical LD model that adapts to the lo
 \bibitem{1000genomes} 1000 Genomes Project Consortium, \emph{An integrated map of genetic variation from 1,092 human genomes}, Nature, Volume 491, Issue 7422, October 2012, Pages 56-65
 
 \bibitem{beagle3} Sharon R. Browning \& L. Brian Browning, \emph{Rapid and Accurate Haplotype Phasing and MIssing-Data Inference for Whole-Genome Association Studies By Use of Localized Haplotype Clustering}, The American Journal of Human Genetics, Volume 81, Issue 5, November 2007, Pages 1084-1097
+
+\bibitem{EMalgorithm} Chuong B. Do \& Serafim Batzoglou, \emph{What is the expectation maximization algorithm?}, Nature Biotechnology, Volume 26, Issue 8, August 2008, Pages 897-899
+
 
 \bibitem{beagle1} Sharon R. Browning, \emph{Multilocus Association Mapping Using Variable-Length Markov Chains}, The American Journal of Human Genetics, Volume 78, Issue 6, June 2006, Pages 903-913
 

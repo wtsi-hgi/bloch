@@ -1,9 +1,9 @@
 \contentsline {section}{\numberline {1}Introduction}{3}
-\contentsline {section}{\numberline {2}Method}{6}
-\contentsline {subsection}{\numberline {2.1}Model Building}{6}
-\contentsline {subsection}{\numberline {2.2}Sampling}{6}
-\contentsline {subsection}{\numberline {2.3}Maximization}{6}
-\contentsline {subsection}{\numberline {2.4}Advantages of BEAGLE algorithm}{6}
-\contentsline {section}{\numberline {3}Implementation}{8}
-\contentsline {section}{\numberline {4}Testing and Results}{9}
-\contentsline {section}{\numberline {5}Future work}{10}
+\contentsline {section}{\numberline {2}Methods}{6}
+\contentsline {subsection}{\numberline {2.1}Model Building}{7}
+\contentsline {subsection}{\numberline {2.2}Forward-Backward Algorithm}{9}
+\contentsline {subsection}{\numberline {2.3}Viterbi Algorithm}{9}
+\contentsline {subsection}{\numberline {2.4}Advantages of BEAGLE algorithm}{9}
+\contentsline {section}{\numberline {3}Implementation}{11}
+\contentsline {section}{\numberline {4}Testing and Results}{12}
+\contentsline {section}{\numberline {5}Future work}{13}
