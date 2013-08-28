@@ -130,7 +130,7 @@ Haplotype & Count \\
 
 The model building algorithm will be exemplified using data in Figure 2.   The algorithm begins by inserting genotype data from each indivudal into the graph.  The data is processed a marker at a time.  If the phase is not known, the data is randomly phased at each marker.  If the marker is missing, the marker is randomly imputed based on population allele frequencies at that marker.  Each path from the root node to the terminal node represents a single haplotype and the results of this process on Figure 2 is shown in Figure 3.
 
-\begin{figure}[ht]
+\begin{figure}[htp!]
 \vspace{-10pt}
 \begin{center}
 \centerline{\includegraphics[scale=0.08]{fig3}}
@@ -146,13 +146,14 @@ The model building algorithm will be exemplified using data in Figure 2.   The a
 After this tree has been created, the algorithm iterates through each level and merges all pairs of nodes where transition probabilities of all downstream nodes are sufficiently similar.  The merging algorithm is illustrated below using Figure 2 as an example.  All nodes at the final level are merged to create the single terminal node that represents the cluster of all haplotypes after being processed by the model.
 
 \newpage
+
 \subsection{Forward-Backward Algorithm}
 
 \subsection{Viterbi Algorithm}
 
 
 \subsection{Advantages of BEAGLE algorithm}
-
+NOTES
 How beagle scales in number of samples and number of markers
 Notes:
 Why the beagle model is good
@@ -174,7 +175,7 @@ paper 3
 How beagle works
 
 Localized haplotype-cluster model is an empirical LD model that adapts to the local structure in the daata. Relative to other methods it does well with large data sets. This methods can essentially be thought of as similar to an EM approach where and initial guess athaplotype phase is made, the model is fit, improved estimates of the haplotype phaseis made and the model is refit etc
-
+END OF NOTES
 \newpage
 \section{Implementation}
 
