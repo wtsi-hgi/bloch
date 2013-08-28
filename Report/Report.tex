@@ -1,4 +1,4 @@
-\documentclass[a4paper,12pt,twoside,abstraction,titlepage]{article}
+\documentclass[a4paper,10pt,twoside,abstraction,titlepage]{article}
 
 \usepackage{verbatim}
 \usepackage{latexsym}
@@ -77,12 +77,12 @@ The BEAGLE algorithm has a similar structure to the expectation maximization (EM
 
 The process can therefore be split into 3 sections: model building, where a probabilistic graphical model is used to implicitely cluster haplotypes; sampling, where haplotypes are re-estimated and used as input into the next model build; and a maximization step, where the most likely haplotypes are computed based on the current model.
 
-The haplotype-clustering model which is built defines a Hidden Markov Model (HMM) where a modified forward-backward can be used for the sampling step and the Viterbi algorithm can be used for the final stage.  The BEAGLE recommendation is to run 10 iterations of the model building and sampling steps before carrying out the Viterbi algorithm.
+The haplotype-clustering model which is built defines a Hidden Markov Model (HMM) where a modified forward-backward algorithm can be used for the sampling step and the Viterbi algorithm can be used for the final stage.  The BEAGLE recommendation is to run 10 iterations of the model building and sampling steps before carrying out the Viterbi algorithm.
 
 
 
 \subsection{Model Building}
-The model is represented as a directed acyclic graph.  Assuming no missing alleles and a number of samples genotyped at $M$ markers the directed graph has the following properties:
+The model is represented as a directed acyclic graph.  Assuming no missing alleles and a collection of samples genotyped at $M$ markers, the directed graph has the following properties:
 
 \vspace{-5pt}
 \begin{enumerate}
@@ -94,18 +94,6 @@ The model is represented as a directed acyclic graph.  Assuming no missing allel
 \item There exists a path from the root node to the terminal node for each haplotype in the samples such that the $m$th allele of the haplotype is the label of the $m$th edge of the path.
 \end{enumerate}
 
-
-NOTES
-When two edges are directed inot the same node, this node represents the union of histories represented by the incoming edges. This represents historical recombination and in terms of the probabilistic model, this represents the Markov property where the sequence of alleles two before the node is independent of the sequence of markers two after the node????? not sure about this reworded in beagle 3 paper
-Example of conditional probability between markers in beagle 1 paper
-
-A node represents represents a collection of possible allele sequences up to the marker level.
-An edge represents a cluster of haplotypes which have allele $a$ at position $m$ and are similar enough locally to be grouped together at that position
-
-Node markov property. recombination. sequence of alleles before node 
-
-
-END OF NOTES
 
 \begin{figure}[htp]
 \centering
@@ -129,22 +117,23 @@ Haplotype & Count \\
 \end{figure}
 
 
-The model building algorithm will be exemplified using data in Figure 2.   The algorithm begins by inserting genotype data from each indivudal into the graph.  The data is processed a marker at a time.  If the phase is not known, the data is randomly phased.  If the marker is missing, the marker is randomly imputed based on population allele frequencies at that marker.  Each path from the root node to the terminal node represents a single haplotype and the results inserting data from Figure 2 into the model format is shown in Figure 3.
+\noindent The model building algorithm will be exemplified using data in Figure 2.   The algorithm begins by inserting genotype data from each indivudal into the graph.  The data is processed a marker at a time.  If the phase is not known, the data is randomly phased.  If the marker is missing, the marker is randomly imputed based on population allele frequencies at that marker.  Each path from the root node to the terminal node represents a single haplotype and the results inserting data from Figure 2 into the model format is shown in Figure 3.
 
 \begin{figure}[htp!]
-\vspace{-10pt}
+\vspace{10pt}
 \begin{center}
 \centerline{\includegraphics[scale=0.08]{fig3}}
-\caption{Tree constructed using summary genotype data in Figure 1. Circles are and edges are lines. Solid edge is the allele 1 and dashed edge represents the allele 2. Numbers above the edges represent counts.  This graph is directional from left to right. \cite{beagle1}}
+\vspace{2pt}
+\caption{Tree constructed using summary genotype data in Figure 2. Circles are nodes and lines are edges. A solid edge represents the allele 1 and dashed edge represents the allele 2. Numbers above the edges represent haplotype counts.  This graph is directional from left to right. \cite{beagle1}}
 
 \end{center}
 \vspace{-25pt}
 \end{figure}
 
 
-After this tree has been created, it then needs to be compressed into the graph format described at the beginning of this section.  The tree is compressed into a graph format by merging pairs of nodes on each level which are sufficiently similar.  The algorithm iterates through each level at a time and merges all pairs of nodes where transition probabilities of all downstream nodes pass a certain threshold.  The merging algorithm is illustrated below using Figure 3 as an example.  All nodes at the final level are merged to create the single terminal node that represents the cluster of all haplotypes after being processed by the model.
+After this tree has been created, it then needs to be compressed into the graph format described at the beginning of this section.  The tree is condensed into a graph format by merging pairs of nodes on each level which are sufficiently similar.  The algorithm iterates through each level at a time and merges all pairs of nodes where transition probabilities of all downstream nodes pass a certain threshold.  All nodes at the final level are merged to create the single terminal node that represents the cluster of all haplotypes after being processed by the model.
 
-The similarity score between nodes $x$ and $y$ on level $m-1$ is calculated as follows.  Let $n_x$ be the haplotype count at node $x$ and $n_y$ be the haplotype count at node $y$.  For allele $a_m$ at level $m$, let $n_x(a_m)$ be the count of haplotypes which pass through node $x$ and begin with marker $a$.  Similarly, let $n_y(a_m)$ be the count of haplotypes which pass through node y and begin with marker $a$.  Continuing, $n_x(a_m,a_{m+1})$ and $n_y(a_m,a_{m+1})$ are haplotype counts which pass through nodes $x$ and $y$ respectively and follow with the sequence of alleles $a_m,a_{m+1}$.  The observed conditional probability difference diff$_{xy}$ between node $x$ and $y$ for given sequence of alleles $a_m,a_{m+1},...,a_{m+k}$ is
+The similarity score between nodes $x$ and $y$ on level $m-1$ is calculated as follows.  Let $n_x$ be the haplotype count at node $x$ and $n_y$ be the haplotype count at node $y$.  For allele $a_m$ at level $m$, let $n_x(a_m)$ be the count of haplotypes which pass through node $x$ and then begin with marker $a$.  Similarly, let $n_y(a_m)$ be the count of haplotypes which pass through node y and then begin with marker $a$.  Continuing, $n_x(a_m,a_{m+1})$ and $n_y(a_m,a_{m+1})$ are haplotype counts which pass through nodes $x$ and $y$ respectively and follow with the sequence of alleles $a_m,a_{m+1}$.  The observed conditional probability difference diff$_{xy}$ between node $x$ and $y$ for given sequence of alleles $a_m,a_{m+1},...,a_{m+k}$ is
 \begin{equation*}
 \mbox{diff}_{xy} = \left|\frac{n_x(a_m,a_{m+1},...,a_{m+k})}{n_x} - \frac{n_y(a_m,a_{m+1},...,a_{m+k})}{n_y}\right|
 \end{equation*}
@@ -152,9 +141,19 @@ The similarity score between nodes $x$ and $y$ on level $m-1$ is calculated as f
 
 \noindent The similarity score for nodes $x$ and $y$ is the maximum diff$_{xy}$ over $k=0, 1, 2,..., M-m$ and all possible $a_m,a_{m+1},...,a_{m+k}$.
 
-The algorithm iterates through each level in the graph and calculates the similarity score between all pairs of nodes and merges the pair that have the lowest similarity score below the corresponding threshold.  The threshold between two nodes $x$ and $y$ is defined as $(n_x^{-1} + n_y^{-1})^{\frac{1}{2}}$.
+The algorithm iterates through each level in the graph and calculates the similarity score between all pairs of nodes and merges the pair that have the lowest similarity score below the corresponding threshold.  The threshold between two nodes $x$ and $y$ is defined as $(n_x^{-1} + n_y^{-1})^{\frac{1}{2}}$.  All nodes are merged into one at the final level.
 
-Consider Figure 3 as an example.   The similarity threshold for nodes 2.1 and 2.2 is 
+\begin{figure}[htp!]
+
+\begin{center}
+\centerline{\includegraphics[scale=0.08]{fig4}}
+\caption{Merged graph.  Nodes 3.1 and 3.3 in Figure 2 have merged into node 3.1 and all nodes in the final level have been merged into node 5.1 \cite{beagle1}.}
+
+\end{center}
+\vspace{-20pt}
+\end{figure}
+
+\noindent Consider Figure 3 as an example.   The similarity threshold for nodes 2.1 and 2.2 is 
 \vspace{-5pt}
 \begin{equation*}
 \left(\frac{1}{311}+\frac{1}{289}\right)^{\frac{1}{2}} = 0.082
@@ -165,7 +164,8 @@ Beginning the calculation of the similarity score of these two nodes, first calc
 \end{equation*}
 The similarity score is the maximum score of all diff$_{xy}$ and is therefore at least 0.373.  This exceeds the cutoff at 0.082 and therefore these two nodes will not be merged.
 
-At level 3, similarity scores for all pairs are calculated.  The threshold for nodes 3.1/3.2 is 
+\vspace{8pt}
+\noindent At level 3, similarity scores for all pairs are calculated.  The threshold for nodes 3.1/3.2 is 
 \vspace{-5pt}
 \begin{equation*}
 \left(\frac{1}{195}+\frac{1}{116}\right)^{\frac{1}{2}} = 0.117
@@ -176,7 +176,8 @@ For $a_3=1$,
 \end{equation*}
 which does exceeds the threshold and therefore nodes can not be merged.
 
-The threshold for nodes 3.2/3.3 is
+\vspace{8pt}
+\noindent The threshold for nodes 3.2/3.3 is
 \vspace{-5pt}
 \begin{equation*}
 \left(\frac{1}{116}+\frac{1}{289}\right)^{\frac{1}{2}} = 0.110
@@ -187,12 +188,16 @@ For $a_3=1$,
 \end{equation*}
 which exceeds the threshold and therefore nodes can not be merged.
 
-The threshold for nodes 3.1/3.3 is
+\vspace{8pt}
+\noindent The threshold for nodes 3.1/3.3 is
 \vspace{-5pt}
 \begin{equation*}
 \left(\frac{1}{195}+\frac{1}{289}\right)^{\frac{1}{2}} = 0.093
 \end{equation*}
-diff$_{xy}$ is calculated for every suffix combination. For $a_3=1$,
+diff$_{xy}$ is calculated for every suffix combination.
+\vspace{8pt}
+
+\noindent For $a_3=1$,
 \begin{equation*}
 \mbox{diff}_{xy} =\left|\frac{100}{195}-\frac{137}{289}\right| = 0.039 
 \end{equation*}
@@ -212,47 +217,58 @@ For $a_3=2, a_4=2$,
 \begin{equation*}
 \mbox{diff}_{xy} =\left|\frac{95}{195}-\frac{152}{289}\right| = 0.039
 \end{equation*}
-Thus the similarity score for nodes 3.1/3.3 is the maximum of all diff$_{xy}$.
+\vspace{1pt}
+
+\noindent Thus the similarity score for nodes 3.1/3.3 is the maximum of all diff$_{xy}$.
 \begin{equation*}
 max(0.039, 0.039, 0.021, 0.018, 0.039) = 0.039
 \end{equation*}
-This score is less than the threshold value as therefore these two nodes can be merged.  When two nodes are merged, the counts of all downstream haplotypes are summed.  Once the merge has occured, the similarity score would be calculated for all new nodes on the next level and so on.  In this example, there are no nodes merged on level 4.  All nodes are then merged on the final level.  The resultant graph is shown in Figure 4.
+The similarity score is less than the threshold value and therefore these two nodes can be merged.  When two nodes are merged, the counts of all downstream haplotypes are summed.  The similarity score for all pairs of nodes on the level is recalculated and merging is repeated for the lowest scoring pair until no more merges on that level can occur. When this happens the similarity scores on the next level are calculated and so on.  In this example, the score and threshold for nodes 3.1 and 3.2 is recalculated.
+\vspace{10pt}
+
+\noindent The threshold for nodes 3.1/3.2 is
+\vspace{-5pt}
+\begin{equation*}
+\left(\frac{1}{484}+\frac{1}{116}\right)^{\frac{1}{2}} = 0.103
+\end{equation*}
+For $a_3=1$,
+\begin{equation*}
+\mbox{diff}_{xy} = \left|\frac{237}{484}-\frac{0}{116}\right| = 0.490
+\end{equation*}
+which exceeds the threshold and therefore no nodes can be merged again at this level.
+\vspace{8pt}
+
+\noindent No nodes are merged on level 4 and all nodes are merged on the final level.  The resultant graph is shown in Figure 4.
+
+The advantage of this graph are that it provides a parsimonious model which is able to adapt to the local structure of the data.  Linkage disequilibrium (LD) is the non-random association of two or more alleles.  This means the occurence of combinations of alleles which occur more often or less often than would be expected by random formation of haplotypes based on allele frequencies.  This occurs because the closer two loci are on a chromosome, the more likely they are to be inherited from a single ancestrial allele; ie. correlation between markers decreases with distance.
+
+The level of LD can be influenced by a number of factors (selection, rate of recombination, rate of mutation, non-random mating) and is important in accurately predicting phase and imputing missing alleles.  The graph implicitely models localized changes in linkage disequilibrium by dynamically clustering different selections of haplotypes at different positions.  The number of clusters at each marker is also influenced by the data.
+
+An edge represents a cluster of haplotypes whose path from the initial node to the terminal node passes through the edge.  These haplotypes tend to have similar patterns of alleles at markers surrounding the edge and therefore each edge defines a locolized haplotype cluster.  Historical recombination can be modelled as node merges, where nodes have two or more incoming edges.  In regions of high LD, less merges and more clusters are expected, and in regions of low LD more merges and fewer haplotype clusters are expected.
 
 
 
 \newpage
+
+\subsection{Induced Hidden Markov Model (HMM)}
+Haplotypes are grouped together at position $a$ if they have simliar downstream transition probabilities.  This means that haplotype clusters at position $a$ are defined by the Markov property: the sequence of alleles at markers $a, a-1, a-2, ...$ are independent of the sequence of alleles at markers $a+1, a+2, ...$.  This means the localized hapotype cluster model can be used to define an HMM where the states are the edges and the emitted symbol for each state is the allele that labels the edge.
+
+Let $n(e)$ define the haplotype count at edge $e$ and $n_p(e)$ define the haplotype count at the parent node of edge $e$.  Each state (edge) emits with probability 1 the allele that labels the edge.  Therefore each state uniquely determines the observed allele but the observed marker does not determine the state, as at a particular level there may be many edges labelled with the same allele.
+
+The initial state probabilities are determind by the edge counts.
+
+
+
 
 \subsection{Forward-Backward Algorithm}
 
+\newpage
 \subsection{Viterbi Algorithm}
 
 
-\subsection{Advantages of BEAGLE algorithm}
-NOTES
-How beagle scales in number of samples and number of markers
-Notes:
-Why the beagle model is good
-
-Does not need any prior information about haplotype frequency distribution. Models which require this type of estimation break down as the number of markers and samples increases because the number of observable haplotypes and the frequencies of these haplotypes become too small to estimate directly. If all feasible haplotypes are considered then this is very computationally expensive.
-Other models include coalescent models which implies that haplotypes that are similar to the ones we have already seen are more likely to be seen again since changes in haplotypes occur thorugh recombination and mutation. Can produce very accurate results but can be computationally expensive as well
-Other methods have made use of haplotype blocks but althorugh usefuly it does not adequately explain all the corelation struction between markers because LD can extend beyond block boundaries and can have more complex patterns within blocks
-Automatically adapts to the amoung of linkage disequilibrium between markers.  No need to choose haplotype window size or select tagging markers.
-Explain what linkage disequilibrium is - correlation structure between markers
-Using a sliding window approach does not take into account how LD structure varies across the genome or areas where LD does not exist due to recombination hotspots 
-Clusters haplotypes to improve power.
-
-Correlation between markers is a localized phenomenom because LD decays with distance. Needs to be taken into account in phasing algorithms
-
-Markov property
-paper 3
-
-
-How beagle works
-
-Localized haplotype-cluster model is an empirical LD model that adapts to the local structure in the daata. Relative to other methods it does well with large data sets. This methods can essentially be thought of as similar to an EM approach where and initial guess athaplotype phase is made, the model is fit, improved estimates of the haplotype phaseis made and the model is refit etc
-END OF NOTES
 \newpage
 \section{Implementation}
+How beagle scales in number of samples and number of markers
 
 \newpage
 \section{Testing and Results}
@@ -279,12 +295,21 @@ Pycuda parallel computation
 
 \bibitem{EMalgorithm} Chuong B. Do \& Serafim Batzoglou, \emph{What is the expectation maximization algorithm?}, Nature Biotechnology, Volume 26, Issue 8, August 2008, Pages 897-899
 
-
 \bibitem{beagle1} Sharon R. Browning, \emph{Multilocus Association Mapping Using Variable-Length Markov Chains}, The American Journal of Human Genetics, Volume 78, Issue 6, June 2006, Pages 903-913
+
+\bibitem{beagle2} Brian L. Browning \& Sharon R. Browning, \emph{Efficient multilocus association testing for whole genome association studies using localized haplotype clustering},  Genetic Epidemiology, Volume 31, Issue 5, Pages 365-375
+
 
 
 
 \end{thebibliography}
 
+NOTES
+Does not need any prior information about haplotype frequency distribution. Models which require this type of estimation break down as the number of markers and samples increases because the number of observable haplotypes and the frequencies of these haplotypes become too small to estimate directly. If all feasible haplotypes are considered then this is very computationally expensive.
+Other models include coalescent models which implies that haplotypes that are similar to the ones we have already seen are more likely to be seen again since changes in haplotypes occur thorugh recombination and mutation. Can produce very accurate results but can be computationally expensive as well
+Other methods have made use of haplotype blocks but althorugh usefuly it does not adequately explain all the corelation struction between markers because LD can extend beyond block boundaries and can have more complex patterns within blocks
+Automatically adapts to the amoung of linkage disequilibrium between markers.  No need to choose haplotype window size or select tagging markers.
+Using a sliding window approach does not take into account how LD structure varies across the genome or areas where LD does not exist due to recombination hotspots 
+Clusters haplotypes to improve power.
 \end{document}  
 

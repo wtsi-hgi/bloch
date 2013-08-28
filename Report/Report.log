@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  28 AUG 2013 12:47
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  28 AUG 2013 20:11
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -18,8 +18,8 @@ lovak, slovenian, spanish, swedish, turkish, turkmen, ukrainian, uppersorbian,
 welsh, loaded.
 (/usr/local/texlive/2012/texmf-dist/tex/latex/base/article.cls
 Document Class: article 2007/10/19 v1.4h Standard LaTeX document class
-(/usr/local/texlive/2012/texmf-dist/tex/latex/base/size12.clo
-File: size12.clo 2007/10/19 v1.4h Standard LaTeX file (size option)
+(/usr/local/texlive/2012/texmf-dist/tex/latex/base/size10.clo
+File: size10.clo 2007/10/19 v1.4h Standard LaTeX file (size option)
 )
 \c@part=\count79
 \c@section=\count80
@@ -447,42 +447,59 @@ Report.toc)
 
 [2
 
-] [3] <reviewimage.jpg, id=17, 803.0pt x 561.09625pt>
+] [3] <reviewimage.jpg, id=19, 803.0pt x 561.09625pt>
 File: reviewimage.jpg Graphic file (type jpg)
  <use reviewimage.jpg>
 Package pdftex.def Info: reviewimage.jpg used on input line 58.
 (pdftex.def)             Requested size: 465.74033pt x 325.43605pt.
 
-[4] [5 <./reviewimage.jpg>] [6] [7] <fig3.jpg, id=33, 3174.86125pt x 2649.9pt>
+[4] [5 <./reviewimage.jpg>] [6] <fig3.jpg, id=32, 3174.86125pt x 2649.9pt>
 File: fig3.jpg Graphic file (type jpg)
 
 <use fig3.jpg>
-Package pdftex.def Info: fig3.jpg used on input line 137.
+Package pdftex.def Info: fig3.jpg used on input line 125.
 (pdftex.def)             Requested size: 253.9941pt x 211.99632pt.
- [8 <./fig3.jpg>] [9] [10] [11] [12] [13] [14] [15] [16]
-(./Report.aux) ) 
+ [7 <./fig3.jpg>]
+Overfull \hbox (11.96445pt too wide) in paragraph at lines 142--143
+\OT1/cmr/m/n/10 The sim-i-lar-ity score for nodes $\OML/cmm/m/it/10 x$ \OT1/cmr
+/m/n/10 and $\OML/cmm/m/it/10 y$ \OT1/cmr/m/n/10 is the max-i-mum diff$[]$ over
+ $\OML/cmm/m/it/10 k \OT1/cmr/m/n/10 = 0\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 1\OM
+L/cmm/m/it/10 ; \OT1/cmr/m/n/10 2\OML/cmm/m/it/10 ; :::; M \OMS/cmsy/m/n/10 ^^@
+
+ []
+
+<fig4.jpg, id=36, 3103.595pt x 1473.505pt>
+File: fig4.jpg Graphic file (type jpg)
+ <use fig4.jpg>
+Package pdftex.def Info: fig4.jpg used on input line 149.
+(pdftex.def)             Requested size: 248.29268pt x 117.8828pt.
+ [8 <./fig4.jpg>]
+[9] [10] [11] [12] [13] [14] [15] [16] [17] (./Report.aux) ) 
 Here is how much of TeX's memory you used:
- 4543 strings out of 493488
- 68962 string characters out of 3141326
- 123829 words of memory out of 3000000
- 7753 multiletter control sequences out of 15000+200000
- 14376 words of font info for 61 fonts, out of 3000000 for 9000
+ 4550 strings out of 493488
+ 68982 string characters out of 3141326
+ 124807 words of memory out of 3000000
+ 7755 multiletter control sequences out of 15000+200000
+ 13474 words of font info for 58 fonts, out of 3000000 for 9000
  957 hyphenation exceptions out of 8191
  38i,7n,38p,986b,327s stack positions out of 5000i,500n,10000p,200000b,50000s
-</usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts
-/cm/cmbx12.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/
-cm/cmex10.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/c
-m/cmmi12.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm
-/cmmi8.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/c
-mr12.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr
-6.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.p
-fb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pf
-b></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb>
-</usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb>
-Output written on Report.pdf (17 pages, 1354681 bytes).
+</usr/local/texlive
+/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/
+2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2
+012/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/20
+12/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/201
+2/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/local/texlive/2012/
+texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2012/te
+xmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/texlive/2012/texm
+f-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/local/texlive/2012/texmf-d
+ist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/2012/texmf-dist
+/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2012/texmf-dist/
+fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2012/texmf-dist/fo
+nts/type1/public/amsfonts/cm/cmti10.pfb>
+Output written on Report.pdf (18 pages, 1678959 bytes).
 PDF statistics:
- 101 PDF objects out of 1000 (max. 8388607)
- 69 compressed objects within 1 object stream
+ 113 PDF objects out of 1000 (max. 8388607)
+ 77 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 11 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 16 words of extra memory for PDF output out of 10000 (max. 10000000)
 
