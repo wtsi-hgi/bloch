@@ -1,4 +1,4 @@
-\documentclass[a4paper,10pt,twoside,abstraction,titlepage]{article}
+\documentclass[a4paper,11pt,twoside,abstraction,titlepage]{article}
 
 \usepackage{verbatim}
 \usepackage{latexsym}
@@ -23,7 +23,7 @@
 \title{\Large \bf Implementation of Imputation Algorithm}
 \author{Michelle Parker}
 
-\linespread{1.18}
+\linespread{1.03}
 
 \begin{document}
 
@@ -244,25 +244,63 @@ The advantage of this graph are that it provides a parsimonious model which is a
 
 The level of LD can be influenced by a number of factors (selection, rate of recombination, rate of mutation, non-random mating) and is important in accurately predicting phase and imputing missing alleles.  The graph implicitely models localized changes in linkage disequilibrium by dynamically clustering different selections of haplotypes at different positions.  The number of clusters at each marker is also influenced by the data.
 
-An edge represents a cluster of haplotypes whose path from the initial node to the terminal node passes through the edge.  These haplotypes tend to have similar patterns of alleles at markers surrounding the edge and therefore each edge defines a locolized haplotype cluster.  Historical recombination can be modelled as node merges, where nodes have two or more incoming edges.  In regions of high LD, less merges and more clusters are expected, and in regions of low LD more merges and fewer haplotype clusters are expected.
+An edge represents a cluster of haplotypes whose path from the initial node to the terminal node passes through the edge.  These haplotypes tend to have similar patterns of alleles at markers surrounding the edge and therefore each edge defines a localized haplotype cluster.  Historical recombination can be modelled as node merges, where nodes have two or more incoming edges.  In regions of low LD, fewer merges and more clusters are expected, and in regions of high LD more merges and fewer haplotype clusters are expected.
 
 
-
-\newpage
 
 \subsection{Induced Hidden Markov Model (HMM)}
 Haplotypes are grouped together at position $a$ if they have simliar downstream transition probabilities.  This means that haplotype clusters at position $a$ are defined by the Markov property: the sequence of alleles at markers $a, a-1, a-2, ...$ are independent of the sequence of alleles at markers $a+1, a+2, ...$.  This means the localized hapotype cluster model can be used to define an HMM where the states are the edges and the emitted symbol for each state is the allele that labels the edge.
 
+\begin{figure}[htp!]
+\begin{center}
+\centerline{\includegraphics[scale=0.08]{fig5}}
+\caption{Copy of merged graph in Figure 4 with edges labelled. \cite{beagle1}.}
+\end{center}
+\vspace{-20pt}
+\end{figure}
+
 Let $n(e)$ define the haplotype count at edge $e$ and $n_p(e)$ define the haplotype count at the parent node of edge $e$.  Each state (edge) emits with probability 1 the allele that labels the edge.  Therefore each state uniquely determines the observed allele but the observed marker does not determine the state, as at a particular level there may be many edges labelled with the same allele.
 
-The initial state probabilities are determind by the edge counts.
+The initial state probabilities are determind by the edge counts.  
+\begin{equation*}
+P(e) = 
+\begin{cases}
+\frac{n(e)}{n_p(e)} & \mbox{if parent node of $e$ is the root node} \\
+0  & \mbox{otherwise}
+\end{cases}
+\end{equation*}
+The transition probabilities are defined as follows.
+\begin{equation*}
+P(e_1|e_2) = 
+\begin{cases}
+\frac{n(e_1)}{n_p(e_1)} & \mbox{if parent node of $e_1$ is the child node of edge $e_2$} \\
+0  & \mbox{otherwise}
+\end{cases}
+\end{equation*}
+This has described a haploid HMM but a diploid HMM is needed because genotype data is used.  The diploid HMM is created from ordered pairs of edges in each level of the graph.  The level of the parent node of an edge defines the level of the edge therefore in a graph with $M+1$ levels, the states of the HMM (edges) can be partioned into $M$ classes $L_m$, where $m=1,2,...,M$.  The edges of the graph in Figure 5 be partioned into the following.
+\vspace{-10pt}
+\begin{align*}
+L_1 &= \{e_{A}, e_{B}\} \\
+L_2 &= \{e_{C}, e_{D}, e_{E}\}\\
+L_3 &= \{e_{F}, e_{G}, e_{H}\} \\
+L_4 &= \{e_{I}, e_{J}, e_{K}, e_{L}\}
+\end{align*}
 
+The state space for the diploid HMM is the union over $m$ of ($L_m \times L_m$).  Each state (ordered pair of edges) emits with probability 1 the unordered alleles that label the edges.  Therefore the diploid HMM emits an unordered genotype.  The initial probabilities and the transition probabilities are the product of the corresponding haploid probabilities.
 
+The initial state probabilities:
+\begin{equation*}
+P(e_1,e_2) = P(e_1)P(e_2)
+\end{equation*}
+Transition state probabilties:
+\begin{equation*}
+P[(e_1,e_2)|(e_3,e_4)] = P(e_1|e_3)P(e_2|e_4)
+\end{equation*}
 
+This is derived from the Hary-Weinberg principle.
 
 \subsection{Forward-Backward Algorithm}
 
-\newpage
 \subsection{Viterbi Algorithm}
 
 
@@ -276,6 +314,10 @@ How beagle scales in number of samples and number of markers
 
 \newpage
 \section{Future work}
+If edges e2 and e3 have the same child node, then P(e1|e3)=P(e1|e2)
+
+Diploid HMM can be extended to 3 and 4 haplotypes for parent-child paris and triplets
+
 Pycuda parallel computation
 
 \newpage
