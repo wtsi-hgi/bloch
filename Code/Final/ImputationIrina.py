@@ -44,8 +44,10 @@ class Tree:
         
         #Add first node
         self.T.add_node(1,level=0,weight=0)
-        for i in range(hlength+2):
-            self.tnodes.append([])
+        
+        self.tnodes = [[] for x in xrange(hlength+2)]
+#        for i in range(hlength+2):
+#            self.tnodes.append([])
         self.tnodes[0].append(1)
         
     #Method which adds a genotype to the graph. Input of first iteration has already been randomly phased and imputed.
@@ -194,7 +196,7 @@ class Tree:
         
             
         #Iterate through each level               
-        for i in range(hlength):
+        for i in xrange(hlength):
             #No merge on level if only one node
             if len(self.tnodes[i]) == 1:
                 pass
@@ -230,14 +232,14 @@ class Tree:
                     k[mnodes[1]] = 1
     
                     #Set all matrix positions of deleted node to 0
-                    for j in range(len(k)):
+                    for j in xrange(len(k)):
                         if j <= mnodes[1]:
                             simmatrix[j][mnodes[1]] = 0
                         elif j > mnodes[1]:
                             simmatrix[mnodes[1]][j] = 0
                                           
                     #Recalculate similarity score for changed node
-                    for j in range(len(k)):
+                    for j in xrange(len(k)):
                         if k[j] == 1:
                             continue
                         else:
@@ -311,14 +313,9 @@ class HMM:
     def diptrans(self, a, b):        
         (p,c,w) = a
         (q,d,x) = b
-        if p == c:            
-            if q == d:
-                return (float(w)*float(x))/(float(self.T.node[p]['weight'])*float(self.T.node[q]['weight']))
-                
-            else:
-                return 0.0            
-        else:
-            return 0.0
+        if p == c and q == d:
+            return (float(w)*float(x))/(float(self.T.node[p]['weight'])*float(self.T.node[q]['weight']))
+        return 0.0
    
     
         
@@ -342,7 +339,7 @@ def forwardbackward(Tree,gt):
             forward[0].append(var)    
 
     #Induction.  Iterate through each level.
-    for i in range(1,hlength+1):
+    for i in xrange(1,hlength+1):
 
         edges.append([])
         forward.append([])
@@ -369,23 +366,28 @@ def forwardbackward(Tree,gt):
     #Choose first s from last matrix of forward probabilities 
     index = random_weighted_choice(forward[hlength])
     
+    back_append = backward.append
+    s_append = s.append
+     
+    back_append(forward[hlength][index])
+    s_append(edges[hlength][index])    
 
-    backward.append(forward[hlength][index])
-    s.append(edges[hlength][index])    
-
-    for i in range(hlength-1,-1,-1):
+    for i in xrange(hlength-1,-1,-1):
         #Temporary list containing probabilities that choice is made from
         prob = []
+        prob_append = prob.append
         for j, k in enumerate(edges[i]):           
-            prob.append(fb.diptrans((s[hlength-i-1][0][0],k[0][1],s[hlength-i-1][0][3]['weight']),(s[hlength-i-1][1][0],k[1][1],s[hlength-i-1][1][3]['weight']))*forward[i][j]/(backward[hlength-i-1]))
+            prob_append(fb.diptrans((s[hlength-i-1][0][0],k[0][1],s[hlength-i-1][0][3]['weight']),(s[hlength-i-1][1][0],k[1][1],s[hlength-i-1][1][3]['weight']))*forward[i][j]/(backward[hlength-i-1]))
         index = random_weighted_choice(prob)
-        backward.append(forward[i][index])
-        s.append(edges[i][index])
+        back_append(forward[i][index])
+        s_append(edges[i][index])
     
     #Create output of path that has been sampled
-    alleles = []
-    for i in s:
-        alleles.append([i[0][3]['a'],i[1][3]['a']])
+#    alleles = []
+#    for i in s:
+#        alleles.append([i[0][3]['a'],i[1][3]['a']])
+
+    alleles = [(i[0][3]['a'],i[1][3]['a']) for i in s]
         
     return alleles
     
@@ -409,7 +411,7 @@ def viterbi(Tree, gt):
             viterbi[0].append(var)    
 
     #Induction.  Iterate through each level.
-    for i in range(1,hlength+1):
+    for i in xrange(1,hlength+1):
 
         edges.append([])
         viterbi.append([])
@@ -438,7 +440,7 @@ def viterbi(Tree, gt):
 
     final = []
     
-    for i in range(hlength,-1,-1):    
+    for i in xrange(hlength,-1,-1):    
         e = edges[i][value]
         final.insert(0,[e[0][3]['a'],e[1][3]['a']])
         
@@ -455,12 +457,14 @@ def viterbi(Tree, gt):
 def testroute(G, i):
     first_node = 1
     
-    ht1 = []
-    ht2 = []
-    for pos in i:
-        ht1.append(pos[0])
-        ht2.append(pos[-1]) 
+#    ht1 = []
+#    ht2 = []
+#    for pos in i:
+#        ht1.append(pos[0])
+#        ht2.append(pos[-1]) 
     
+    ht1 = [pos[0] for pos in i]
+    ht2 = [pos[-1] for pos in i]
 
 
     def testroute_1(node, ht):
@@ -596,7 +600,7 @@ if G.d == 0:
 if G.d == 1:
     for i in GT:        
         j = i[::-1]
-        output.append(viterbi(G,j)[::-1])      
+        output.append(viterbi(G,j)[::-1])       
 
 
 
