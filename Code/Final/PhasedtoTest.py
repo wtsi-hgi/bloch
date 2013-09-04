@@ -12,9 +12,16 @@
 
 import csv
 import random
+import argparse
 
-f = open('/Users/mp18/Documents/bloch/Data/chr16/chr16_beagle.bloch', 'rb')
-g = open('/Users/mp18/Documents/bloch/Data/chr16/chr16_beagleb.bloch', 'w')
+#Parse command line arguements
+parser = argparse.ArgumentParser()
+parser.add_argument('-i','--input',dest='input',help='input genotype file. phased or unphased.')
+parser.add_argument('-o','--output',dest='output',help='output filename')
+args = parser.parse_args()   
+
+f = open(args.input, 'rb')
+g = open(args.output, 'w')
 
 
 
