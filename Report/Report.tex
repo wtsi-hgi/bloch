@@ -8,7 +8,6 @@
 \usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage{amssymb}
-\usepackage[retainorgcmds]{IEEEtrantools}
 \usepackage{mathrsfs}
 \usepackage{graphicx}
 \usepackage{caption}
@@ -68,7 +67,7 @@ Testing association on just the SNPs which are directly assayed ({\bf a}) may no
 
 In low coverage whole genome sequencing, such as in the 1000 Genomes Project \cite{1000genomes}, imputation is used to assist genotype likelihood estimation and calling.  Relatively small amounts of sequence data across many individuals is combined to accurately estimate the genotypes for each sample.  In other words, the imputation algorithms use the sample data itself as its own reference panel.  Imputation can also be extended to include non-SNP variation such as copy number variation, classical human leukocyte antigen alleles, and short insertions and deletions (indels) \cite{review2010}.
 
-There are many different methods for imputation based on different statistical models, but imputation algorithms can be divided into two main categories: those which take into account all observed genotypes during its computation of a single sample (IMPUTE, MACH, fastPHASE/BIMBAM), and those which only look at a window of markers either side of the missing genotype (BEAGLE, PLINK) \cite{review2009}.  Using all observed genotypes is computationally expensive but in many cases can achieve a more accurate result.  Factors which affect imputation accuracy include the size and choice of reference panel; the difference in genetic diversity between the study population and the reference panel; use of tagging methods for SNP array design.  In almost all cases, the larger the reference panel, the more accurate the imputation.  The algorithm implemented in this report uses a probabalistic graphical model and is described in the BEAGLE paper \cite{beagle3}.
+There are many different methods for imputation based on different statistical models, but imputation algorithms can be divided into two main categories: those which take into account all observed genotypes during its computation of a single sample (IMPUTE, MACH, fastPHASE/BIMBAM), and those which only look at a window of markers either side of the missing genotype (BEAGLE, PLINK) \cite{review2009}.  Using all observed genotypes is computationally expensive but in many cases can achieve a more accurate result.  Factors which affect imputation accuracy include the size and choice of reference panel; the difference in genetic diversity between the study population and the reference panel; use of tagging methods for SNP array design.  In almost all cases, the more samples in the reference panel, the more accurate the imputation.  The algorithm implemented in this report uses a probabalistic graphical model and is described in the BEAGLE paper \cite{beagle3}.
 
 
 \newpage
@@ -223,7 +222,10 @@ For $a_3=2, a_4=2$,
 \begin{equation*}
 max(0.039, 0.039, 0.021, 0.018, 0.039) = 0.039
 \end{equation*}
-The similarity score is less than the threshold value and therefore these two nodes can be merged.  When two nodes are merged, the counts of all downstream haplotypes are summed.  The similarity score for all pairs of nodes on the level is recalculated and merging is repeated for the lowest scoring pair until no more merges on that level can occur. When this happens the similarity scores on the next level are calculated and so on.  In this example, the score and threshold for nodes 3.1 and 3.2 is recalculated.
+The similarity score is less than the threshold value and therefore these two nodes are able to be merged.
+
+This level contains only 3 nodes (3.1, 3.2, 3.3) and from the 3 combinations of pairs, only the pair (3.1, 3.3) has a score below the corresponding threshold value for the pair of nodes.  Therefore in this example, 3.1/3.3 are the only pair which can be merged at this stage.  Merging these two nodes involves the summation of all downstream haplotype paths.  All incoming edges to node 3.3 are moved to node 3.1.  All values of downstream paths from 3.3 are added to the values of 3.1.  After this process the node 3.3 is deleted, leaving only two nodes on that level (3.1, 3.2).  The similarity score is re-calculated for all remaining nodes and again the lowest scoring pair of nodes which pass the corresponding threshold are merged.  This repeats until no merges can happen.  In this example, the similarity score is recalculated for nodes 3.1/3.2.
+
 \vspace{10pt}
 
 \noindent The threshold for nodes 3.1/3.2 is
@@ -240,7 +242,7 @@ which exceeds the threshold and therefore no nodes can be merged again at this l
 
 \noindent No nodes are merged on level 4 and all nodes are merged on the final level.  The resultant graph is shown in Figure 4.
 
-The advantage of this graph are that it provides a parsimonious model which is able to adapt to the local structure of the data.  Linkage disequilibrium (LD) is the non-random association of two or more alleles.  This means the occurence of combinations of alleles which occur more often or less often than would be expected by random formation of haplotypes based on allele frequencies.  This occurs because the closer two loci are on a chromosome, the more likely they are to be inherited from a single ancestrial allele; ie. correlation between markers decreases with distance.
+The advantage of this graph is that it provides a parsimonious model which is able to adapt to the local structure of the data.  Linkage disequilibrium (LD) is the non-random association of two or more alleles.  This means the occurence of combinations of alleles which occur more often or less often than would be expected by random formation of haplotypes based on allele frequencies.  This occurs because the closer two loci are on a chromosome, the more likely they are to be inherited from a single ancestrial allele; ie. correlation between markers decreases with distance.
 
 The level of LD can be influenced by a number of factors (selection, rate of recombination, rate of mutation, non-random mating) and is important in accurately predicting phase and imputing missing alleles.  The graph implicitely models localized changes in linkage disequilibrium by dynamically clustering different selections of haplotypes at different positions.  The number of clusters at each marker is also influenced by the data.
 
