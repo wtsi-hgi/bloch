@@ -15,6 +15,7 @@
 \usepackage{url}
 \usepackage{booktabs}
 \usepackage{wrapfig}
+\usepackage{framed}
 
 
 
@@ -29,7 +30,7 @@
 \maketitle
 
 \begin{abstract}
-The aim of this document
+Accurate and fast imputation of genotype data is an increasing requirement as a surge of low coverage sequence data is being produced.  This report describes the techniques and algorithms used in the imputation software BEAGLE 2.1.  A Python implementation emulating the BEAGLE algorithms has been tested to show similar accuracy on the same number of samples and markers but with a very slow run time.  ?? conclusion??
 \end{abstract}
 
 \clearpage
@@ -76,8 +77,7 @@ The BEAGLE algorithm has a similar structure to the expectation maximization (EM
 
 The process can therefore be split into 3 sections: model building, where a probabilistic graphical model is used to implicitely cluster haplotypes; sampling, where haplotypes are re-estimated and used as input into the next model build; and a maximization step, where the most likely haplotypes are computed based on the current model.
 
-The haplotype-clustering model which is built defines a Hidden Markov Model (HMM) where a modified forward-backward algorithm can be used for the sampling step and the Viterbi algorithm can be used for the final stage.  The BEAGLE recommendation is to run 10 iterations of the model building and sampling steps before carrying out the Viterbi algorithm.
-
+The haplotype-clustering model which is built defines a Hidden Markov Model (HMM) where a modified forward-backward algorithm can be used for the sampling step and the Viterbi algorithm can be used for the maximization.  The BEAGLE recommendation is to run 10 iterations of the model building and sampling steps before carrying out the Viterbi algorithm.
 
 
 \subsection{Model Building}
@@ -240,13 +240,13 @@ For $a_3=1$,
 which exceeds the threshold and therefore no nodes can be merged again at this level.
 \vspace{8pt}
 
-\noindent No nodes are merged on level 4 and all nodes are merged on the final level.  The resultant graph is shown in Figure 4.
+\noindent No nodes are merged on level 4 and all nodes are merged on the final level.  The resultant graph is shown in Figure 4. \cite{beagle1}
 
 The advantage of this graph is that it provides a parsimonious model which is able to adapt to the local structure of the data.  Linkage disequilibrium (LD) is the non-random association of two or more alleles.  This means the occurence of combinations of alleles which occur more often or less often than would be expected by random formation of haplotypes based on allele frequencies.  This occurs because the closer two loci are on a chromosome, the more likely they are to be inherited from a single ancestrial allele; ie. correlation between markers decreases with distance.
 
-The level of LD can be influenced by a number of factors (selection, rate of recombination, rate of mutation, non-random mating) and is important in accurately predicting phase and imputing missing alleles.  The graph implicitely models localized changes in linkage disequilibrium by dynamically clustering different selections of haplotypes at different positions.  The number of clusters at each marker is also influenced by the data.
+The level of LD can be influenced by a number of factors (selection, rate of recombination, rate of mutation, non-random mating) and is important in accurately predicting phase and imputing missing alleles.  The graph implicitely models localized changes in linkage disequilibrium by dynamically clustering different selections of haplotypes at different positions.  The number of clusters at each marker is also influenced by the data. \cite{LDwiki}
 
-An edge represents a cluster of haplotypes whose path from the initial node to the terminal node passes through the edge.  These haplotypes tend to have similar patterns of alleles at markers surrounding the edge and therefore each edge defines a localized haplotype cluster.  Historical recombination can be modelled as node merges, where nodes have two or more incoming edges.  In regions of low LD, fewer merges and more clusters are expected, and in regions of high LD more merges and fewer haplotype clusters are expected.
+An edge represents a cluster of haplotypes whose path from the initial node to the terminal node passes through the edge.  These haplotypes tend to have similar patterns of alleles at markers surrounding the edge and therefore each edge defines a localized haplotype cluster.  In regions of low LD, fewer merges and more clusters are expected, and in regions of high LD more merges and fewer haplotype clusters are expected. \cite{beagle2}
 
 
 
@@ -261,9 +261,9 @@ Haplotypes are grouped together at position $a$ if they have simliar downstream 
 \vspace{-20pt}
 \end{figure}
 
-Let $n(e)$ define the haplotype count at edge $e$ and $n_p(e)$ define the haplotype count at the parent node of edge $e$.  Each state (edge) emits with probability 1 the allele that labels the edge.  Therefore each state uniquely determines the observed allele but the observed marker does not determine the state, as at a particular level there may be many edges labelled with the same allele.
+\noindent Let $n(e)$ define the haplotype count at edge $e$ and $n_p(e)$ define the haplotype count at the parent node of edge $e$.  Each state (edge) emits with probability 1 the allele that labels the edge.  Therefore each state uniquely determines the observed allele but the observed marker does not determine the state, as at a particular level there may be many edges labelled with the same allele.
 
-The initial state probabilities are determind by the edge counts.  
+\noindent The initial state probabilities are determind by the edge counts.  
 \begin{equation*}
 P(e) = 
 \begin{cases}
@@ -279,7 +279,7 @@ P(e_1|e_2) =
 0  & \mbox{otherwise}
 \end{cases}
 \end{equation*}
-This has described a haploid HMM but a diploid HMM is needed because genotype data is used.  The diploid HMM is created from ordered pairs of edges in each level of the graph.  The level of the parent node of an edge defines the level of the edge therefore in a graph with $M+1$ levels, the states of the HMM (edges) can be partioned into $M$ classes $L_m$, where $m=1,2,...,M$.  The edges of the graph in Figure 5 be partioned into the following.
+This has described a haploid HMM but a diploid HMM is needed because genotype data is used.  The diploid HMM is created from ordered pairs of edges in each level of the graph.  The level of the parent node of an edge defines the level of the edge therefore in a graph with $M+1$ levels, the states of the HMM (edges) can be partioned into $M$ classes $L_m$, where $m=1,2,...,M$.  The edges of the graph in Figure 5 are partioned in the following way.
 \vspace{-10pt}
 \begin{align*}
 L_1 &= \{e_{A}, e_{B}\} \\
@@ -288,9 +288,10 @@ L_3 &= \{e_{F}, e_{G}, e_{H}\} \\
 L_4 &= \{e_{I}, e_{J}, e_{K}, e_{L}\}
 \end{align*}
 
-The state space for the diploid HMM is the union over $m$ of ($L_m \times L_m$).  Each state (ordered pair of edges) emits with probability 1 the unordered alleles that label the edges.  Therefore the diploid HMM emits an unordered genotype.  The initial probabilities and the transition probabilities are the product of the corresponding haploid probabilities.
+\noindent The state space for the diploid HMM is the union over $m$ of ($L_m \times L_m$).  Each state (ordered pair of edges) emits with probability 1 the unordered alleles that label the edges.  Therefore the diploid HMM emits an unordered genotype.  The initial probabilities and the transition probabilities are the product of the corresponding haploid probabilities.
 
-The initial state probabilities:
+\vspace{10pt}
+\noindent The initial state probabilities:
 \begin{equation*}
 P(e_1,e_2) = P(e_1)P(e_2)
 \end{equation*}
@@ -299,11 +300,81 @@ Transition state probabilties:
 P[(e_1,e_2)|(e_3,e_4)] = P(e_1|e_3)P(e_2|e_4)
 \end{equation*}
 
-This is derived from the Hary-Weinberg principle.
+\noindent The Hary-Weinberg principle is assumed. \cite{beagle2}
 
-\subsection{Forward-Backward Algorithm}
+\newpage
+\subsection{Forwards Algorithm and Backwards Sampling}
+A modified forwards algorithm is used to sample genotypes from the diploid model conditional on the observed data.  Let $g_m$ be the observed unordered genotype at marker $m$ for an individual.  Let the state $s_m = (e_1, e_2)$ be an ordered pair of edges in $L_m \times L_m$.
 
+In a graph with $M+1$ levels, an individual's genotypes is $\{g_1, g_2, ... , g_M\}$.  The forward variable is defined as 
+\begin{equation*}
+\alpha_m(s_m) = P(g_1,g_2,...,g_m,s_m)
+\end{equation*}
+
+\noindent In other words, the forward variable is the probability of the observed unordered genotypes up to marker $m$ and the ordered state $s_m$ at marker $m$ given the current model.  This can be solved inductively as follows.
+
+\vspace{10pt}
+\noindent 1. Initiation
+\begin{equation*}
+\alpha_1(s_1) = P(g_1, s_1) = P(s_1) P(g_1|s_1)
+\end{equation*}
+
+\begin{framed}
+\begin{tabular}{lll}
+\hspace{-20pt} $P(s_1)$ & : & \hspace{-5pt}Probability the ordered state is $s_1$ at marker 1 (initial)\\
+\hspace{-20pt} $P(g_1|s_1)$ & :& \hspace{-5pt}Probability $g_1$ is observed given the state $s_1$ (emission)
+\end{tabular}
+\end{framed}
+
+
+\vspace{10pt}
+\noindent 2. Induction
+\begin{eqnarray*}
+\alpha_{m+1}(s_{m+1}) &=& P(g_1,g_2,...,g_{m+1},s_{m+1})     \\
+&=& \sum\limits_{s_m} P(g_1,g_2,...,g_m, g_{m+1}, s_m, s_{m+1}) \\
+&=&  \sum\limits_{s_m} P(g_1,g_2,...,g_m,, s_m) P(g_{m+1}|s_{m+1}) P(s_{m+1}|s_m) \\
+&=& P(g_{m+1}|s_{m+1}) \sum\limits_{s_m} \alpha_m(s_m) P(s_{m+1}|s_m) 
+\end{eqnarray*}
+
+\begin{framed}
+\begin{tabular}{lll}
+\hspace{-20pt} $P(g_{m+1}|s_{m+1})$ &:& \hspace{-5pt} Probability $g_{m+1}$ is observed given the state \\
+&& $s_{m+1}$ (emission) \\
+\hspace{-20pt}  $\sum\limits_{s_m} \alpha_m(s_m)$ &:& \hspace{-5pt} Sum of probabilities of all branches of the tree \vspace{-7pt} \\ 
+&& where state is $s_m$ at level $m$ \\
+\hspace{-20pt} $P(s_{m+1}|s_m)$ &:& Probability state is $s_{m+1}$ at level $m+1$ given the \\
+&& state is $s_m$ at level $m$ (transition)
+\end{tabular}
+\end{framed}
+
+\noindent Forward probabilities are calculated for every possible combination of ordered edges at each level (states) using the observed genotype sequence for an individual ${g_1, g_2, ..., g_M}$.  The role of imputation is to infer the missing alleles in an individual's genotype.  At a specific marker position, if both alleles of $g_m$ are missing, then the emission probability $P(g_m|s_m) = 1$ for every state.  If one allele of $g_m$ is missing then the emission probability $P(g_m|s_m) = 1$ if the known allele labels one of the ordered edges in the state $s_m$.
+
+The forward probabilities are used in the backwards sampling procedure.  This begins at marker $M$ and continues backwards by induction as follows. 
+
+\vspace{10pt}
+\noindent 1. Initiation:  Choose state $s_M$ with probability proportional to $\alpha_M(s_M)$
+
+\vspace{10pt}
+\noindent 2. Induction: Choose state $s_m$ given the states $s_{m+1},s_{m+2},...,s_M$
+\begin{equation*}
+P(s_m|,s_{m+1},s_{m+2},...,s_M,g_1,g_2,...,g_{m+1},g_{m+2},...,g_M)
+\end{equation*} \vspace{-25pt}
+\begin{eqnarray*}
+&=&  P(s_m|,s_{m+1},g_1,g_2,...,g_{m+1}) \\
+&=& P(s_m,s_{m+1},g_1,g_2,...,g_{m+1})/\alpha_{m+1}(s_{m+1}) \\
+&=& P(g_{m+1}|s_{m+1}) P(s{m+1}|s_m) \frac{\alpha_m(s_m)}{\alpha_{m+1}(s_{m+1})}
+\end{eqnarray*}
+
+\noindent An ordered pair of edges will be sampled for each level of the graph corresponding on the individual's genotype.  This sequence is used as input into the next model build. \cite{beagle2}
+
+
+\subsubsection{Example}
+
+\newpage
 \subsection{Viterbi Algorithm}
+
+\newpage
+\subsection{Imputation Algorithm}
 
 
 \newpage
@@ -319,6 +390,10 @@ How beagle scales in number of samples and number of markers
 If edges e2 and e3 have the same child node, then P(e1|e3)=P(e1|e2)
 
 Diploid HMM can be extended to 3 and 4 haplotypes for parent-child paris and triplets
+
+Genotype probabilities to be taken into account
+
+Emission probabilities to take intermediate values
 
 Pycuda parallel computation
 
@@ -342,6 +417,8 @@ Pycuda parallel computation
 \bibitem{beagle1} Sharon R. Browning, \emph{Multilocus Association Mapping Using Variable-Length Markov Chains}, The American Journal of Human Genetics, Volume 78, Issue 6, June 2006, Pages 903-913
 
 \bibitem{beagle2} Brian L. Browning \& Sharon R. Browning, \emph{Efficient multilocus association testing for whole genome association studies using localized haplotype clustering},  Genetic Epidemiology, Volume 31, Issue 5, Pages 365-375
+
+\bibitem{LDwiki} Wikipedia, \emph{Linkage Disequilibrium}, \url{http://en.wikipedia.org/wiki/Linkage_disequilibrium}
 
 
 
