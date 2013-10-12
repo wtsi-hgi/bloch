@@ -4,8 +4,8 @@
 \contentsline {subsection}{\numberline {2.2}Induced Hidden Markov Model (HMM)}{11}
 \contentsline {subsection}{\numberline {2.3}Forwards Algorithm and Backwards Sampling}{13}
 \contentsline {subsubsection}{\numberline {2.3.1}Example}{14}
-\contentsline {subsection}{\numberline {2.4}Viterbi Algorithm}{15}
-\contentsline {subsection}{\numberline {2.5}Imputation Algorithm}{16}
-\contentsline {section}{\numberline {3}Implementation}{17}
-\contentsline {section}{\numberline {4}Testing and Results}{18}
-\contentsline {section}{\numberline {5}Future work}{19}
+\contentsline {subsection}{\numberline {2.4}Viterbi Algorithm}{17}
+\contentsline {subsubsection}{\numberline {2.4.1}Example}{17}
+\contentsline {section}{\numberline {3}Implementation}{18}
+\contentsline {section}{\numberline {4}Testing and Results}{19}
+\contentsline {section}{\numberline {5}Future work}{20}

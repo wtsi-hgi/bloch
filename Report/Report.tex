@@ -16,6 +16,7 @@
 \usepackage{booktabs}
 \usepackage{wrapfig}
 \usepackage{framed}
+\usepackage{array}
 
 
 
@@ -369,16 +370,126 @@ P(s_m|,s_{m+1},s_{m+2},...,s_M,g_1,g_2,...,g_{m+1},g_{m+2},...,g_M)
 
 
 \subsubsection{Example}
+Using the Figure 4 as the model and Figure 5 for the corresponding edge labels, an example of the calculation of forward probabilities and backwards sampling is given for an individual with the following genotype
+\begin{equation*}
+g_1 = ?/?, \;\; g_2 = 1/1, \;\; g_3 = 1/2, \;\; g_4 = 1/2
+\end{equation*}
+where a question mark denotes an unkown allele and the backslash indictates that this genotype is unphased.
+\vspace{10pt}
 
+\noindent $\alpha_1$ is calculated in the initiation step for every pair of edges in $L_1 = \{e_{A}, e_{B}\}$.
+\begin{eqnarray*}
+\alpha_1(e_A,e_A) &=& P[s_1 = (e_A, e_A)] \; P[g_1=?/? \, | \, s_1 = (e_A,e_A)] \\
+&=& P(e_A) \: P(e_A) \: P[g_1=?/? \, | \, s_1 = (e_A,e_A)] \\
+&=& \left(\frac{311}{600}\right)^2\!\!(1)  \\
+\end{eqnarray*}
+\vspace{-20pt}
+
+\noindent Similarly, $\alpha_1(e_A,e_B)  = \alpha_1(e_B,e_A)  = P(e_A)P(e_B)(1) = \left(\frac{311}{600}\right)\!\left(\frac{289}{600}\right)$ 
+and $\alpha_1(e_B,e_B) = P(e_B)^2 = \left(\frac{289}{600}\right)^2$.
+
+\newpage
+\noindent In the induction step, to calculate values of $\alpha_2$ for pairs of edges in $L_2 = \{e_{C}, e_{D}, e_{E}\}$, values of $\alpha_1$ are used.
+\begin{eqnarray*}
+\alpha_2(e_C,e_C) &=& P(g_2=1/1\,|\,s_2=(e_C,e_C)) \; \sum\limits_{s_1} \alpha_1(s_1) \; P(s_2=(e_C,e_C)\,|\,s_1) \\
+&=& P(g_2=1/1\,|\,s_2=(e_C,e_C)) \;  \{ \alpha_1(e_A,e_A) \; P[s_2=(e_C,e_C) \,  | \, s_1 = (e_A,e_A)]  \\
+&&+  \alpha_1(e_A,e_B) \; P[s_2=(e_C,e_C) \,  | \, s_1 = (e_A,e_B)]\\
+&&+ \alpha_1(e_B,e_A) \; P[s_2=(e_C,e_C) \,  | \, s_1 = (e_B,e_A)]\\
+&&+\alpha_1(e_B,e_B)\; P[s_2=(e_C,e_C) \,  | \, s_1 = (e_B,e_B)] \} \\
+&=& (1)\left[\left( \frac{311}{600} \right)^2 \!\! \left(\frac{195}{311}\right)^2+0+0+0\right] \\
+&=& \left( \frac{195}{600} \right)^2
+\end{eqnarray*}
+
+\noindent$\alpha_2(e_C,e_D) = \alpha_2(e_D,e_C) = 0$ because $ P(g_2=1/1\,|\,s_2=(e_C,e_D)) = 0$
+\begin{eqnarray*}
+\alpha_2(e_C,e_E) &=&  P(g_2=1/1\,|\,s_2=(e_C,e_E)) \;  \{ \alpha_1(e_A,e_A) \; P[s_2=(e_C,e_E) \,  | \, s_1 = (e_A,e_A)]\\
+&&+  \alpha_1(e_A,e_B) \; P[s_2=(e_C,e_E) \,  | \, s_1 = (e_A,e_B)]\\
+&&+ \alpha_1(e_B,e_A) \; P[s_2=(e_C,e_E) \,  | \, s_1 = (e_B,e_A)]\\
+&&+\alpha_1(e_B,e_B)\; P[s_2=(e_C,e_E) \,  | \, s_1 = (e_B,e_B)] \} \\
+&=& (1)\left[0+\left( \frac{311}{600} \right) \!\! \left( \frac{289}{600} \right) \!\! \left(\frac{195}{311}\right) \!\! \left(\frac{289}{289}\right)+0+0\right] \\
+&=& \left( \frac{195}{600} \right) \!\! \left( \frac{289}{600} \right)
+\end{eqnarray*}
+\vspace{3pt}
+
+\noindent Similarly, $\alpha_2(e_E,e_C) = \left( \frac{289}{600} \right) \!\! \left( \frac{195}{600} \right)$, $\alpha_2(e_E,e_E) = \left( \frac{289}{600} \right)^2 $, and $\alpha_2(e_D,e_D) = \alpha_2(e_D,e_E) = \alpha_2(e_E,e_D)  = 0$
+
+\vspace{10pt}
+\noindent Continuing with $\alpha_3$ and omitting zero terms,
+\begin{eqnarray*}
+\alpha_3(e_F,e_G) &=& P(g_3=1/2\,|\,s_3=(e_F,e_G)) \; \sum\limits_{s_2} \alpha_2(s_2) \; P(s_3=(e_F,e_G)\,|\,s_2) \\
+&=& P(g_2=1/2\,|\,s_3=(e_F,e_G)) \;  \{ \alpha_2(e_C,e_C) \; P[s_3=(e_F,e_G) \,  | \, s_2 = (e_C,e_C)]  \\
+&&+  \alpha_2(e_C,e_E) \; P[s_3=(e_F,e_G) \,  | \, s_2 = (e_C,e_E)]\\
+&&+ \alpha_2(e_E,e_C) \; P[s_3=(e_F,e_G) \,  | \, s_2 = (e_E,e_C)]\\
+&&+\alpha_2(e_E,e_E)\; P[s_3=(e_F,e_G) \,  | \, s_2 = (e_E,e_E)] \} \\
+&=& (1)[\left( \frac{195}{600} \right)^2 \!\! \left(\frac{237}{484}\right) \!\! \left(\frac{247}{484}\right) +  \left( \frac{195}{600} \right) \!\! \left(\frac{289}{600}\right) \!\! \left(\frac{237}{484}\right)\!\! \left(\frac{247}{484}\right)\\
+&& + \left( \frac{289}{600} \right) \!\! \left(\frac{195}{600}\right) \!\! \left(\frac{237}{484}\right)\!\! \left(\frac{247}{484}\right) + \left( \frac{289}{600} \right)^2 \!\! \left(\frac{237}{484}\right) \!\! \left(\frac{247}{484}\right) ]\\
+&=&  \left( \frac{237}{600} \right) \!\! \left( \frac{247}{600} \right)
+\end{eqnarray*}
+
+\noindent The other non-zero $\alpha_3$ is $\alpha_3(e_G,e_F) = \left( \frac{247}{600} \right) \!\! \left( \frac{237}{600} \right)$.  The non-zero $\alpha_4$ values are $\alpha_4(e_I,e_K) = \alpha_4(e_K,e_I) = \left( \frac{46}{600} \right) \!\! \left( \frac{247}{600} \right)$.
+
+Therefore, the forward probabilities that have been calculated for each level are as follows.
+
+\vspace{15pt}
+
+\noindent $\alpha_1$
+\begin{center}
+\begin{tabular}{ c | >{\centering\arraybackslash}m{1.6cm} >{\centering\arraybackslash}m{1.6cm} }
+ & $e_A$ & $e_B$\\[5pt]
+\hline \\[-5pt]
+$e_A$ & $\left(\frac{311}{600}\right)^2$ & $\left(\frac{289}{600}\right) \!\!\left(\frac{311}{600}\right)$ \\ \\[-5pt]
+$e_B$ & $\left(\frac{311}{600}\right) \!\!\left(\frac{289}{600}\right)$ &$ \left(\frac{289}{600}\right)^2 $ \\[5pt]
+\end{tabular}
+\end{center}
+
+\vspace{10pt}
+
+\noindent $\alpha_2$
+\begin{center}
+\begin{tabular}{ c | >{\centering\arraybackslash}m{1.6cm}>{\centering\arraybackslash}m{1.6cm}>{\centering\arraybackslash}m{1.6cm}}
+ & $e_C$ & $e_D$& $e_E$\\[5pt]
+\hline \\[-5pt]
+$e_C$ & $\left(\frac{195}{600}\right)^2$ & 0 &$ \left(\frac{289}{600}\right) \left(\frac{195}{600}\right)$\\ \\[-5pt]
+$e_D$ & 0 & 0 & 0 \\\\[-5pt]
+$e_E$ & $\left(\frac{195}{600}\right) \left(\frac{289}{600}\right)$ & 0 & $\left(\frac{289}{600}\right)^2$ \\[5pt]
+\end{tabular}
+\end{center}
+
+\vspace{10pt}
+
+\noindent $\alpha_3$
+\begin{center}
+\begin{tabular}{ c | >{\centering\arraybackslash}m{1.6cm}>{\centering\arraybackslash}m{1.6cm}>{\centering\arraybackslash}m{1.6cm} }
+ & $e_F$ & $e_G$& $e_H$\\[5pt]
+\hline \\[-5pt]
+$e_F$ & 0 & $\left(\frac{247}{600}\right) \!\!\left(\frac{237}{600}\right)$ & 0 \\ \\[-5pt]
+$e_G$ & $\left(\frac{237}{600}\right) \!\! \left(\frac{247}{600}\right)$ & 0 & 0 \\ \\[-5pt]
+$e_H$ & 0 & 0 & 0 \\[5pt]
+\end{tabular}
+\end{center}
+
+\vspace{10pt}
+
+\noindent $\alpha_4$
+\begin{center}
+\begin{tabular}{ c | >{\centering\arraybackslash}m{1.6cm}>{\centering\arraybackslash}m{1.6cm}>{\centering\arraybackslash}m{1.6cm} >{\centering\arraybackslash}m{1.6cm} }
+ & $e_I$ & $e_J$& $e_K$ & $e_H$ \\[5pt]
+\hline \\[-5pt]
+$e_I$ & 0 & 0 & $\left(\frac{46}{600}\right) \!\! \left(\frac{247}{600}\right)$ & 0\\ \\[-5pt]
+$e_J$ & 0 & 0 & 0 & 0\\\\[-5pt]
+$e_K$ & $\left(\frac{46}{600}\right) \!\! \left(\frac{247}{600}\right)$ & 0 & 0 & 0\\\\[-5pt]
+$e_H$ & 0 & 0 & 0 & 0 \\[5pt]
+\end{tabular}
+\end{center}
 \newpage
 \subsection{Viterbi Algorithm}
 
-\newpage
-\subsection{Imputation Algorithm}
-
+\subsubsection{Example}
 
 \newpage
 \section{Implementation}
+The Python implementation can take phased and unphased genotype data.  For phased data, each haplotype is 
+
 How beagle scales in number of samples and number of markers
 
 \newpage
