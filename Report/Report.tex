@@ -363,7 +363,7 @@ P(s_m|,s_{m+1},s_{m+2},...,s_M,g_1,g_2,...,g_{m+1},g_{m+2},...,g_M)
 \begin{eqnarray*}
 &=&  P(s_m|,s_{m+1},g_1,g_2,...,g_{m+1}) \\
 &=& P(s_m,s_{m+1},g_1,g_2,...,g_{m+1})/\alpha_{m+1}(s_{m+1}) \\
-&=& P(g_{m+1}|s_{m+1}) P(s{m+1}|s_m) \frac{\alpha_m(s_m)}{\alpha_{m+1}(s_{m+1})}
+&=& P(g_{m+1}|s_{m+1}) P(s_{m+1}|s_m) \frac{\alpha_m(s_m)}{\alpha_{m+1}(s_{m+1})}
 \end{eqnarray*}
 
 \noindent An ordered pair of edges will be sampled for each level of the graph corresponding on the individual's genotype.  This sequence is used as input into the next model build. \cite{beagle2}
@@ -481,9 +481,83 @@ $e_K$ & $\left(\frac{46}{600}\right) \!\! \left(\frac{247}{600}\right)$ & 0 & 0 
 $e_H$ & 0 & 0 & 0 & 0 \\[5pt]
 \end{tabular}
 \end{center}
+
+\newpage
+
+\noindent After the forward probabilities have been calculated, a diploid path is sampled using the backward probabilities as weights.  Backward probabilities in the final level are calculated in the initiation stage for every pair of edges.  $s_4(e_I,e_K)$ has the backwards probability 
+
+\begin{equation*}
+\alpha_4(e_I,e_K)/[\alpha_4(e_I,e_K) + \alpha_4(e_K,e_I)] = \frac{1}{2}
+\end{equation*}
+\vspace{1pt}
+
+\noindent Similarly, the backwards probability of $\alpha_4(e_K,e_I)$ is also $\frac{1}{2}$.  The backwards sampling algorithm randomly chooses a pair of these edges based on these probabilities. If $s_4=(e_I,e_K)$ were to be chosen by the algorithm, then this ordered pair of edges is used to sample the next pair of edges in the induction stage.  $s_3 = (e_F,e_G)$ is sampled with the following backwards probability.
+\begin{gather*}
+P[g_4=[1/2] \,|\,s_4=(e_I,e_K)] \;P[s_4=(e_I,e_K)\,|\,s_3=(e_F,e_G)] \;\frac{\alpha_3(e_F,e_G)}{\alpha_4(e_I,e_K)}  \\
+ = (1)\left(\frac{46}{237}\right)(1) \; \frac{\alpha_3(e_F,e_G)}{\alpha_4(e_I,e_K)} = 1
+\end{gather*}
+
+\vspace{2pt}
+\noindent $s_3 = (e_F,e_G)$ is the only pair of edges which can be sampled because it can be seen from Figure 5 that this is the only ordered edge pair which connects to $s_4=(e_I,e_K)$.  Let $s_2 = (e_C, e_E)$ be sampled with probability
+\begin{gather*}
+P[g_3=[1/2] \,|\,s_3=(e_F,e_G)] \;P[s_3=(e_F,e_G)\,|\,s_2 = (e_C, e_E)] \;\frac{\alpha_2(e_C, e_E)}{\alpha_3(e_F,e_G)}  \\
+ = \left(\frac{195}{484}\right) \!\! \left(\frac{289}{484}\right) = 0.2406
+\end{gather*}
+\vspace{1pt}
+\noindent Finally, $s_1 = (e_A,e_B)$ is sampled with probability
+\vspace{-5pt}
+\begin{equation*}
+P[g_2=[1/1] \,|\,s_2=(e_C,e_E)] \;P[s_2=(e_C,e_E)\,|\,s_1 = (e_A,e_B)] \;\frac{\alpha_1(e_A, e_B)}{\alpha_2(e_C,e_E)} = 1
+\end{equation*}
+
+\noindent The path $s_4=(e_I,e_K), s_3 = (e_F,e_G), s_2=(e_C,e_E), s_1 = (e_A,e_B)$ is sampled with the probability (0.5)(1)(0.2406)(1) = 0.1203.  The path  $s_4=(e_K,e_I), s_3 = (e_G,e_F), s_2=(e_E,e_C), s_1 = (e_B,e_A)$ has the same probability.
+
+
+
+
 \newpage
 \subsection{Viterbi Algorithm}
 
+The Viterbi Algorithm is used to find the most likely haplotypes for each individual conditional on the model and the individual's genotype data.  These haplotypes are the output of the algorithm.  Let $g_m$ be the observed unordered genotype at marker $m$ for an individual.  Let the state $s_m = (e_1, e_2)$ be an ordered pair of edges in $L_m \times L_m$.
+
+In a graph with $M+1$ levels, an individual's genotypes is $\{g_1, g_2, ... , g_M\}$.  Define $\delta_m(s_m)$ as the highest probability along a single path at marker $m$ which accounts for the first $m$ markers and ends with ordered pair of edges $s_m$.
+\begin{equation*}
+\delta_m(s_m) = \max_{s_1,...,s_{m-1}} P(s_1,s_2,...,s_m, g_1, g_2,..., g_m)
+\end{equation*}
+
+The most likely pair of haplotypes for each individual can be calculated by iterating through each level.  We keep a record of which state $s_m$ maximized $\delta_m$ at each marker.  The Viterbi algorithm is almost identical to the forward algorithm.  The major difference is the maximization over previous states which is used in place of summation in the induction part. \cite{rabiner}
+
+\vspace{10pt}
+\noindent 1. Initiation
+\begin{equation*}
+\delta_1(s_1) = P(g_1, s_1) = P(s_1) P(g_1|s_1)
+\end{equation*}
+
+\begin{framed}
+\begin{tabular}{lll}
+\hspace{-20pt} $P(s_1)$ & : & \hspace{-5pt}Probability the ordered state is $s_1$ at marker 1 (initial)\\
+\hspace{-20pt} $P(g_1|s_1)$ & :& \hspace{-5pt}Probability $g_1$ is observed given the state $s_1$ (emission)
+\end{tabular}
+\end{framed}
+
+
+\vspace{10pt}
+\noindent 2. Induction
+\begin{equation*}
+\delta_{m+1}(s_{m+1}) = P(g_{m+1}|s_{m+1}) \max \left[ \delta_m(s_m) P(s_{m+1}|s_m) \right] 
+\end{equation*}
+
+\begin{framed}
+\begin{tabular}{lll}
+\hspace{-20pt} $P(g_{m+1}|s_{m+1})$ &:& \hspace{-5pt} Probability $g_{m+1}$ is observed given the state \\
+&& $s_{m+1}$ (emission) \\
+\hspace{-20pt}  $\delta_m(s_m)$ &:& \hspace{-5pt} Highest probability of state sequence up to marker $m$ \\ 
+\hspace{-20pt} $P(s_{m+1}|s_m)$ &:& Probability state is $s_{m+1}$ at level $m+1$ given the \\
+&& state is $s_m$ at level $m$ (transition)
+\end{tabular}
+\end{framed}
+
+\newpage
 \subsubsection{Example}
 
 \newpage
@@ -530,6 +604,8 @@ Pycuda parallel computation
 \bibitem{beagle2} Brian L. Browning \& Sharon R. Browning, \emph{Efficient multilocus association testing for whole genome association studies using localized haplotype clustering},  Genetic Epidemiology, Volume 31, Issue 5, Pages 365-375
 
 \bibitem{LDwiki} Wikipedia, \emph{Linkage Disequilibrium}, \url{http://en.wikipedia.org/wiki/Linkage_disequilibrium}
+
+\bibitem{rabiner} Lawrence Rabiner, \emph{A Tutorial on Hidden Markov Models and Selected Applications in Speech Recognition}, Proceedings of the IEEE, 1989, Page 257-266
 
 
 
