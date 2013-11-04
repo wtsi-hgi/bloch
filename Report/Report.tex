@@ -374,7 +374,7 @@ Using the Figure 4 as the model and Figure 5 for the corresponding edge labels, 
 \begin{equation*}
 g_1 = ?/?, \;\; g_2 = 1/1, \;\; g_3 = 1/2, \;\; g_4 = 1/2
 \end{equation*}
-where a question mark denotes an unkown allele and the backslash indictates that this genotype is unphased.
+where a question mark denotes an unkown allele and the forwardslash indictates that this genotype is unphased.
 \vspace{10pt}
 
 \noindent $\alpha_1$ is calculated in the initiation step for every pair of edges in $L_1 = \{e_{A}, e_{B}\}$.
@@ -551,7 +551,8 @@ The most likely pair of haplotypes for each individual can be calculated by iter
 \begin{tabular}{lll}
 \hspace{-20pt} $P(g_{m+1}|s_{m+1})$ &:& \hspace{-5pt} Probability $g_{m+1}$ is observed given the state \\
 && $s_{m+1}$ (emission) \\
-\hspace{-20pt}  $\delta_m(s_m)$ &:& \hspace{-5pt} Highest probability of state sequence up to marker $m$ \\ 
+\hspace{-20pt}  $\delta_m(s_m)$ &:& \hspace{-5pt} Highest probability of state sequence up to marker \\
+&& $m$ where last state is $s_m$\\ 
 \hspace{-20pt} $P(s_{m+1}|s_m)$ &:& Probability state is $s_{m+1}$ at level $m+1$ given the \\
 && state is $s_m$ at level $m$ (transition)
 \end{tabular}
@@ -559,6 +560,23 @@ The most likely pair of haplotypes for each individual can be calculated by iter
 
 \newpage
 \subsubsection{Example}
+Using the Figure 4 as the model and Figure 5 for the corresponding edge labels, an example of the calculation of the most likely haplotypes for an individual with the following genotype
+\begin{equation*}
+g_1 = ?/?, \;\; g_2 = 1/1, \;\; g_3 = 1/2, \;\; g_4 = 1/2
+\end{equation*}
+where a question mark denotes an unkown allele and the forwardslash indictates that this genotype is unphased.
+\vspace{10pt}
+
+\noindent $\delta_1$ is calculated in the initiation step for every pair of edges in $L_1 = \{e_{A}, e_{B}\}$.
+\begin{eqnarray*}
+\delta_1(e_A,e_A) &=& P[s_1 = (e_A, e_A)] \; P[g_1=?/? \, | \, s_1 = (e_A,e_A)] \\
+&=& P(e_A) \: P(e_A) \: P[g_1=?/? \, | \, s_1 = (e_A,e_A)] \\
+&=& \left(\frac{311}{600}\right)^2\!\!(1)  \\
+\end{eqnarray*}
+\vspace{-20pt}
+
+\noindent Similarly, $\delta_1(e_A,e_B)  = \delta_1(e_B,e_A)  = P(e_A)P(e_B)(1) = \left(\frac{311}{600}\right)\!\left(\frac{289}{600}\right)$ 
+and $\delta_1(e_B,e_B) = P(e_B)^2 = \left(\frac{289}{600}\right)^2$.
 
 \newpage
 \section{Implementation}
