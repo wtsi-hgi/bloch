@@ -24,7 +24,7 @@
 \title{\Large \bf Implementation of Imputation Algorithm}
 \author{Michelle Parker}
 
-\linespread{1.03}
+\linespread{1.1}
 
 \begin{document}
 
@@ -239,11 +239,11 @@ For $a_3=1$,
 \mbox{diff}_{xy} = \left|\frac{237}{484}-\frac{0}{116}\right| = 0.490
 \end{equation*}
 which exceeds the threshold and therefore no nodes can be merged again at this level.
-\vspace{8pt}
 
-\noindent No nodes are merged on level 4 and all nodes are merged on the final level.  The resultant graph is shown in Figure 4. \cite{beagle1}
 
-The advantage of this graph is that it provides a parsimonious model which is able to adapt to the local structure of the data.  Linkage disequilibrium (LD) is the non-random association of two or more alleles.  This means the occurence of combinations of alleles which occur more often or less often than would be expected by random formation of haplotypes based on allele frequencies.  This occurs because the closer two loci are on a chromosome, the more likely they are to be inherited from a single ancestrial allele; ie. correlation between markers decreases with distance.
+No nodes are merged on level 4 and all nodes are merged on the final level.  The resultant graph is shown in Figure 4. \cite{beagle1}
+\newpage
+\noindent The advantage of this graph is that it provides a parsimonious model which is able to adapt to the local structure of the data.  Linkage disequilibrium (LD) is the non-random association of two or more alleles.  This means the occurence of combinations of alleles which occur more often or less often than would be expected by random formation of haplotypes based on allele frequencies.  This occurs because the closer two loci are on a chromosome, the more likely they are to be inherited from a single ancestrial allele; ie. correlation between markers decreases with distance.
 
 The level of LD can be influenced by a number of factors (selection, rate of recombination, rate of mutation, non-random mating) and is important in accurately predicting phase and imputing missing alleles.  The graph implicitely models localized changes in linkage disequilibrium by dynamically clustering different selections of haplotypes at different positions.  The number of clusters at each marker is also influenced by the data. \cite{LDwiki}
 
@@ -262,9 +262,9 @@ Haplotypes are grouped together at position $a$ if they have simliar downstream 
 \vspace{-20pt}
 \end{figure}
 
-\noindent Let $n(e)$ define the haplotype count at edge $e$ and $n_p(e)$ define the haplotype count at the parent node of edge $e$.  Each state (edge) emits with probability 1 the allele that labels the edge.  Therefore each state uniquely determines the observed allele but the observed marker does not determine the state, as at a particular level there may be many edges labelled with the same allele.
+Let $n(e)$ define the haplotype count at edge $e$ and $n_p(e)$ define the haplotype count at the parent node of edge $e$.  Each state (edge) emits with probability 1 the allele that labels the edge.  Therefore each state uniquely determines the observed allele but the observed marker does not determine the state, as at a particular level there may be many edges labelled with the same allele.
 
-\noindent The initial state probabilities are determind by the edge counts.  
+The initial state probabilities are determind by the edge counts.  
 \begin{equation*}
 P(e) = 
 \begin{cases}
@@ -388,41 +388,41 @@ where a question mark denotes an unkown allele and the forwardslash indictates t
 \noindent Similarly, $\alpha_1(e_A,e_B)  = \alpha_1(e_B,e_A)  = P(e_A)P(e_B)(1) = \left(\frac{311}{600}\right)\!\left(\frac{289}{600}\right)$ 
 and $\alpha_1(e_B,e_B) = P(e_B)^2 = \left(\frac{289}{600}\right)^2$.
 
-\newpage
-\noindent In the induction step, to calculate values of $\alpha_2$ for pairs of edges in $L_2 = \{e_{C}, e_{D}, e_{E}\}$, values of $\alpha_1$ are used.
+\noindent In the induction step, in order to calculate values of $\alpha_2$ for pairs of edges in $L_2 = \{e_{C}, e_{D}, e_{E}\}$, values of $\alpha_1$ are used.
+\vspace{-10pt}
 \begin{eqnarray*}
 \alpha_2(e_C,e_C) &=& P(g_2=1/1\,|\,s_2=(e_C,e_C)) \; \sum\limits_{s_1} \alpha_1(s_1) \; P(s_2=(e_C,e_C)\,|\,s_1) \\
 &=& P(g_2=1/1\,|\,s_2=(e_C,e_C)) \;  \{ \alpha_1(e_A,e_A) \; P[s_2=(e_C,e_C) \,  | \, s_1 = (e_A,e_A)]  \\
-&&+  \alpha_1(e_A,e_B) \; P[s_2=(e_C,e_C) \,  | \, s_1 = (e_A,e_B)]\\
-&&+ \alpha_1(e_B,e_A) \; P[s_2=(e_C,e_C) \,  | \, s_1 = (e_B,e_A)]\\
-&&+\alpha_1(e_B,e_B)\; P[s_2=(e_C,e_C) \,  | \, s_1 = (e_B,e_B)] \} \\
+&&+ \; \alpha_1(e_A,e_B) \; P[s_2=(e_C,e_C) \,  | \, s_1 = (e_A,e_B)]\\
+&&+ \; \alpha_1(e_B,e_A) \; P[s_2=(e_C,e_C) \,  | \, s_1 = (e_B,e_A)]\\
+&&+\; \alpha_1(e_B,e_B)\; P[s_2=(e_C,e_C) \,  | \, s_1 = (e_B,e_B)] \} \\
 &=& (1)\left[\left( \frac{311}{600} \right)^2 \!\! \left(\frac{195}{311}\right)^2+0+0+0\right] \\
 &=& \left( \frac{195}{600} \right)^2
 \end{eqnarray*}
-
 \noindent$\alpha_2(e_C,e_D) = \alpha_2(e_D,e_C) = 0$ because $ P(g_2=1/1\,|\,s_2=(e_C,e_D)) = 0$
 \begin{eqnarray*}
 \alpha_2(e_C,e_E) &=&  P(g_2=1/1\,|\,s_2=(e_C,e_E)) \;  \{ \alpha_1(e_A,e_A) \; P[s_2=(e_C,e_E) \,  | \, s_1 = (e_A,e_A)]\\
-&&+  \alpha_1(e_A,e_B) \; P[s_2=(e_C,e_E) \,  | \, s_1 = (e_A,e_B)]\\
-&&+ \alpha_1(e_B,e_A) \; P[s_2=(e_C,e_E) \,  | \, s_1 = (e_B,e_A)]\\
-&&+\alpha_1(e_B,e_B)\; P[s_2=(e_C,e_E) \,  | \, s_1 = (e_B,e_B)] \} \\
+&&+ \; \alpha_1(e_A,e_B) \; P[s_2=(e_C,e_E) \,  | \, s_1 = (e_A,e_B)]\\
+&&+ \; \alpha_1(e_B,e_A) \; P[s_2=(e_C,e_E) \,  | \, s_1 = (e_B,e_A)]\\
+&&+ \; \alpha_1(e_B,e_B)\; P[s_2=(e_C,e_E) \,  | \, s_1 = (e_B,e_B)] \} \\
 &=& (1)\left[0+\left( \frac{311}{600} \right) \!\! \left( \frac{289}{600} \right) \!\! \left(\frac{195}{311}\right) \!\! \left(\frac{289}{289}\right)+0+0\right] \\
 &=& \left( \frac{195}{600} \right) \!\! \left( \frac{289}{600} \right)
 \end{eqnarray*}
-\vspace{3pt}
-
 \noindent Similarly, $\alpha_2(e_E,e_C) = \left( \frac{289}{600} \right) \!\! \left( \frac{195}{600} \right)$, $\alpha_2(e_E,e_E) = \left( \frac{289}{600} \right)^2 $, and $\alpha_2(e_D,e_D) = \alpha_2(e_D,e_E) = \alpha_2(e_E,e_D)  = 0$
 
-\vspace{10pt}
+
 \noindent Continuing with $\alpha_3$ and omitting zero terms,
 \begin{eqnarray*}
 \alpha_3(e_F,e_G) &=& P(g_3=1/2\,|\,s_3=(e_F,e_G)) \; \sum\limits_{s_2} \alpha_2(s_2) \; P(s_3=(e_F,e_G)\,|\,s_2) \\
 &=& P(g_2=1/2\,|\,s_3=(e_F,e_G)) \;  \{ \alpha_2(e_C,e_C) \; P[s_3=(e_F,e_G) \,  | \, s_2 = (e_C,e_C)]  \\
-&&+  \alpha_2(e_C,e_E) \; P[s_3=(e_F,e_G) \,  | \, s_2 = (e_C,e_E)]\\
-&&+ \alpha_2(e_E,e_C) \; P[s_3=(e_F,e_G) \,  | \, s_2 = (e_E,e_C)]\\
-&&+\alpha_2(e_E,e_E)\; P[s_3=(e_F,e_G) \,  | \, s_2 = (e_E,e_E)] \} \\
-&=& (1)[\left( \frac{195}{600} \right)^2 \!\! \left(\frac{237}{484}\right) \!\! \left(\frac{247}{484}\right) +  \left( \frac{195}{600} \right) \!\! \left(\frac{289}{600}\right) \!\! \left(\frac{237}{484}\right)\!\! \left(\frac{247}{484}\right)\\
-&& + \left( \frac{289}{600} \right) \!\! \left(\frac{195}{600}\right) \!\! \left(\frac{237}{484}\right)\!\! \left(\frac{247}{484}\right) + \left( \frac{289}{600} \right)^2 \!\! \left(\frac{237}{484}\right) \!\! \left(\frac{247}{484}\right) ]\\
+&&+ \; \alpha_2(e_C,e_E) \; P[s_3=(e_F,e_G) \,  | \, s_2 = (e_C,e_E)]\\
+&&+ \; \alpha_2(e_E,e_C) \; P[s_3=(e_F,e_G) \,  | \, s_2 = (e_E,e_C)]\\
+&&+ \; \alpha_2(e_E,e_E)\; P[s_3=(e_F,e_G) \,  | \, s_2 = (e_E,e_E)] \} \\
+\end{eqnarray*}
+
+\begin{eqnarray*}
+\alpha_3(e_F,e_G) &=& (1)[\left( \frac{195}{600} \right)^2 \!\! \left(\frac{237}{484}\right) \!\! \left(\frac{247}{484}\right) +  \left( \frac{195}{600} \right) \!\! \left(\frac{289}{600}\right) \!\! \left(\frac{237}{484}\right)\!\! \left(\frac{247}{484}\right)\\
+&& + \; \left( \frac{289}{600} \right) \!\! \left(\frac{195}{600}\right) \!\! \left(\frac{237}{484}\right)\!\! \left(\frac{247}{484}\right) + \left( \frac{289}{600} \right)^2 \!\! \left(\frac{237}{484}\right) \!\! \left(\frac{247}{484}\right) ]\\
 &=&  \left( \frac{237}{600} \right) \!\! \left( \frac{247}{600} \right)
 \end{eqnarray*}
 
@@ -468,9 +468,10 @@ $e_H$ & 0 & 0 & 0 \\[5pt]
 \end{tabular}
 \end{center}
 
-\vspace{10pt}
+\vspace{50pt}
 
 \noindent $\alpha_4$
+\vspace{-5pt}
 \begin{center}
 \begin{tabular}{ c | >{\centering\arraybackslash}m{1.6cm}>{\centering\arraybackslash}m{1.6cm}>{\centering\arraybackslash}m{1.6cm} >{\centering\arraybackslash}m{1.6cm} }
  & $e_I$ & $e_J$& $e_K$ & $e_H$ \\[5pt]
@@ -482,15 +483,13 @@ $e_H$ & 0 & 0 & 0 & 0 \\[5pt]
 \end{tabular}
 \end{center}
 
-\newpage
-
+\vspace{8pt}
 \noindent After the forward probabilities have been calculated, a diploid path is sampled using the backward probabilities as weights.  Backward probabilities in the final level are calculated in the initiation stage for every pair of edges.  $s_4(e_I,e_K)$ has the backwards probability 
-
+\vspace{-2pt}
 \begin{equation*}
 \alpha_4(e_I,e_K)/[\alpha_4(e_I,e_K) + \alpha_4(e_K,e_I)] = \frac{1}{2}
 \end{equation*}
-\vspace{1pt}
-
+\vspace{2pt}
 \noindent Similarly, the backwards probability of $\alpha_4(e_K,e_I)$ is also $\frac{1}{2}$.  The backwards sampling algorithm randomly chooses a pair of these edges based on these probabilities. If $s_4=(e_I,e_K)$ were to be chosen by the algorithm, then this ordered pair of edges is used to sample the next pair of edges in the induction stage.  $s_3 = (e_F,e_G)$ is sampled with the following backwards probability.
 \begin{gather*}
 P[g_4=[1/2] \,|\,s_4=(e_I,e_K)] \;P[s_4=(e_I,e_K)\,|\,s_3=(e_F,e_G)] \;\frac{\alpha_3(e_F,e_G)}{\alpha_4(e_I,e_K)}  \\
@@ -503,7 +502,7 @@ P[g_4=[1/2] \,|\,s_4=(e_I,e_K)] \;P[s_4=(e_I,e_K)\,|\,s_3=(e_F,e_G)] \;\frac{\al
 P[g_3=[1/2] \,|\,s_3=(e_F,e_G)] \;P[s_3=(e_F,e_G)\,|\,s_2 = (e_C, e_E)] \;\frac{\alpha_2(e_C, e_E)}{\alpha_3(e_F,e_G)}  \\
  = \left(\frac{195}{484}\right) \!\! \left(\frac{289}{484}\right) = 0.2406
 \end{gather*}
-\vspace{1pt}
+\vspace{5pt}
 \noindent Finally, $s_1 = (e_A,e_B)$ is sampled with probability
 \vspace{-5pt}
 \begin{equation*}
@@ -544,7 +543,7 @@ The most likely pair of haplotypes for each individual can be calculated by iter
 \vspace{10pt}
 \noindent 2. Induction
 \begin{equation*}
-\delta_{m+1}(s_{m+1}) = P(g_{m+1}|s_{m+1}) \max \left[ \delta_m(s_m) P(s_{m+1}|s_m) \right] 
+\delta_{m+1}(s_{m+1}) = P(g_{m+1}|s_{m+1}) \: \max_{s_m} \left[ \delta_m(s_m) P(s_{m+1}|s_m) \right] 
 \end{equation*}
 
 \begin{framed}
@@ -565,7 +564,7 @@ Using the Figure 4 as the model and Figure 5 for the corresponding edge labels, 
 g_1 = ?/?, \;\; g_2 = 1/1, \;\; g_3 = 1/2, \;\; g_4 = 1/2
 \end{equation*}
 where a question mark denotes an unkown allele and the forwardslash indictates that this genotype is unphased.
-\vspace{10pt}
+\vspace{8pt}
 
 \noindent $\delta_1$ is calculated in the initiation step for every pair of edges in $L_1 = \{e_{A}, e_{B}\}$.
 \begin{eqnarray*}
@@ -573,10 +572,108 @@ where a question mark denotes an unkown allele and the forwardslash indictates t
 &=& P(e_A) \: P(e_A) \: P[g_1=?/? \, | \, s_1 = (e_A,e_A)] \\
 &=& \left(\frac{311}{600}\right)^2\!\!(1)  \\
 \end{eqnarray*}
-\vspace{-20pt}
+\vspace{-25pt}
 
 \noindent Similarly, $\delta_1(e_A,e_B)  = \delta_1(e_B,e_A)  = P(e_A)P(e_B)(1) = \left(\frac{311}{600}\right)\!\left(\frac{289}{600}\right)$ 
 and $\delta_1(e_B,e_B) = P(e_B)^2 = \left(\frac{289}{600}\right)^2$.
+\vspace{10pt}
+
+\noindent In the induction step, in order to calculate values of $\delta_2$ for pairs of edges in $L_2 = \{e_{C}, e_{D}, e_{E}\}$, values of $\delta_1$ are used.
+\vspace{-5pt}
+\begin{eqnarray*}
+\delta_2(e_C,e_C) &=& P(g_2=1/1\,|\,s_2=(e_C,e_C)) \; \max_{s_1} \left[ \delta_1(s_1) \; P(s_2=(e_C,e_C)\,|\,s_1) \right]\\
+&=& P(g_2=1/1\,|\,s_2=(e_C,e_C)) \;  \max \: [ \delta_1(e_A,e_A) \; P[s_2=(e_C,e_C) \,  | \, s_1 = (e_A,e_A)],  \\
+&&\delta_1(e_A,e_B) \; P[s_2=(e_C,e_C) \,  | \, s_1 = (e_A,e_B)],\\
+&&\delta_1(e_B,e_A) \; P[s_2=(e_C,e_C) \,  | \, s_1 = (e_B,e_A)],\\
+&&\delta_1(e_B,e_B)\; P[s_2=(e_C,e_C) \,  | \, s_1 = (e_B,e_B)] ] \\
+&=& (1) \: \max\left[\left( \frac{311}{600} \right)^2 \!\! \left(\frac{195}{311}\right)^2\!,0,0,0\right] \\
+&=& \left( \frac{195}{600} \right)^2
+\end{eqnarray*}
+\vspace{5pt}
+\noindent$\delta_2(e_C,e_D) = \delta_2(e_D,e_C) = 0$ because $ P(g_2=1/1\,|\,s_2=(e_C,e_D)) = 0$
+\begin{eqnarray*}
+\delta_2(e_C,e_E) &=&  P(g_2=1/1\,|\,s_2=(e_C,e_E)) \;  \max \left[ \delta_1(e_A,e_A) \; P[s_2=(e_C,e_E) \,  | \, s_1 = (e_A,e_A)] \right],\\
+&&\delta_1(e_A,e_B) \; P[s_2=(e_C,e_E) \,  | \, s_1 = (e_A,e_B)],\\
+&&\delta_1(e_B,e_A) \; P[s_2=(e_C,e_E) \,  | \, s_1 = (e_B,e_A)],\\
+&&\delta_1(e_B,e_B)\; P[s_2=(e_C,e_E) \,  | \, s_1 = (e_B,e_B)] \} \\
+&=& (1) \max \left[0, \left( \frac{311}{600} \right) \!\! \left( \frac{289}{600} \right) \!\! \left(\frac{195}{311}\right) \!\! \left(\frac{289}{289}\right)\!, 0, 0\right] \\
+&=& \left( \frac{195}{600} \right) \!\! \left( \frac{289}{600} \right)
+\end{eqnarray*}
+
+\noindent Similarly, $\delta_2(e_E,e_C) = \left( \frac{289}{600} \right) \!\! \left( \frac{195}{600} \right)$, $\delta_2(e_E,e_E) = \left( \frac{289}{600} \right)^2 $, and $\delta_2(e_D,e_D) = \delta_2(e_D,e_E) = \delta_2(e_E,e_D)  = 0$
+
+\vspace{10pt}
+\noindent Continuing with $\delta_3$ and omitting zero terms,
+\begin{eqnarray*}
+\delta_3(e_F,e_G) &=& P(g_3=1/2\,|\,s_3=(e_F,e_G)) \; \max_{s_2} \left[\delta_2(s_2) \; P(s_3=(e_F,e_G)\,|\,s_2) \right]\\
+&=& P(g_2=1/2\,|\,s_3=(e_F,e_G)) \;  \max [ \delta_2(e_C,e_C) \; P[s_3=(e_F,e_G) \,  | \, s_2 = (e_C,e_C)], \\
+&&\delta_2(e_C,e_E) \; P[s_3=(e_F,e_G) \,  | \, s_2 = (e_C,e_E)],\\
+&&\delta_2(e_E,e_C) \; P[s_3=(e_F,e_G) \,  | \, s_2 = (e_E,e_C)],\\
+&&\delta_2(e_E,e_E)\; P[s_3=(e_F,e_G) \,  | \, s_2 = (e_E,e_E)] ] \\
+&=& (1) \; \max \bigg[\left( \frac{195}{600} \right)^2 \!\! \left(\frac{237}{484}\right) \!\! \left(\frac{247}{484}\right), \left( \frac{195}{600} \right) \!\! \left(\frac{289}{600}\right) \!\! \left(\frac{237}{484}\right)\!\! \left(\frac{247}{484}\right), \\
+&&\left( \frac{289}{600} \right) \!\! \left(\frac{195}{600}\right) \!\! \left(\frac{237}{484}\right)\!\! \left(\frac{247}{484}\right), \left( \frac{289}{600} \right)^2 \!\! \left(\frac{237}{484}\right) \!\! \left(\frac{247}{484}\right) \bigg]\\
+&=&  \left( \frac{289}{600} \right)^2 \!\! \left(\frac{237}{484}\right) \!\! \left(\frac{247}{484}\right)
+\end{eqnarray*}
+
+\noindent The other non-zero $\delta_3$ is $\delta_3(e_G,e_F) = \left( \frac{289}{600} \right)^2 \! \left(\frac{237}{484}\right) \!\! \left(\frac{247}{484}\right)$.  The non-zero $\delta_4$ values are $\delta_4(e_I,e_K) = \delta_4(e_K,e_I) = \left( \frac{289}{600} \right)^2 \! \left(\frac{46}{484}\right) \!\! \left(\frac{247}{484}\right)$.
+
+Therefore, the probabilities that have been calculated for the viterbi algorithm are as follows.
+
+\vspace{15pt}
+
+\noindent $\delta_1$
+\begin{center}
+\begin{tabular}{ c | >{\centering\arraybackslash}m{1.6cm} >{\centering\arraybackslash}m{1.6cm} }
+ & $e_A$ & $e_B$\\[5pt]
+\hline \\[-5pt]
+$e_A$ & $\left(\frac{311}{600}\right)^2$ & $\left(\frac{289}{600}\right) \!\!\left(\frac{311}{600}\right)$ \\ \\[-5pt]
+$e_B$ & $\left(\frac{311}{600}\right) \!\!\left(\frac{289}{600}\right)$ &$ \left(\frac{289}{600}\right)^2 $ \\[5pt]
+\end{tabular}
+\end{center}
+
+\vspace{50pt}
+
+\noindent $\delta_2$
+\begin{center}
+\begin{tabular}{ c | >{\centering\arraybackslash}m{1.6cm}>{\centering\arraybackslash}m{1.6cm}>{\centering\arraybackslash}m{1.6cm}}
+ & $e_C$ & $e_D$& $e_E$\\[5pt]
+\hline \\[-5pt]
+$e_C$ & $\left(\frac{195}{600}\right)^2$ & 0 &$ \left(\frac{289}{600}\right) \left(\frac{195}{600}\right)$\\ \\[-5pt]
+$e_D$ & 0 & 0 & 0 \\\\[-5pt]
+$e_E$ & $\left(\frac{195}{600}\right) \left(\frac{289}{600}\right)$ & 0 & $\left(\frac{289}{600}\right)^2$ \\[5pt]
+\end{tabular}
+\end{center}
+
+\vspace{10pt}
+
+\noindent $\delta_3$
+\begin{center}
+\begin{tabular}{ c | >{\centering\arraybackslash}m{2.2cm}>{\centering\arraybackslash}m{2.2cm}>{\centering\arraybackslash}m{2.2cm} }
+ & $e_F$ & $e_G$& $e_H$\\[5pt]
+\hline \\[-5pt]
+$e_F$ & 0 & $\left( \frac{289}{600} \right)^2 \! \left(\frac{237}{484}\right) \!\! \left(\frac{247}{484}\right)$ & 0 \\ \\[-5pt]
+$e_G$ & $\left( \frac{289}{600} \right)^2 \!\left(\frac{237}{484}\right) \!\! \left(\frac{247}{484}\right)$ & 0 & 0 \\ \\[-5pt]
+$e_H$ & 0 & 0 & 0 \\[5pt]
+\end{tabular}
+\end{center}
+
+\vspace{10pt}
+
+\noindent $\delta_4$
+\begin{center}
+\begin{tabular}{ c | >{\centering\arraybackslash}m{2cm}>{\centering\arraybackslash}m{2cm}>{\centering\arraybackslash}m{2cm} >{\centering\arraybackslash}m{1.6cm} }
+ & $e_I$ & $e_J$& $e_K$ & $e_H$ \\[5pt]
+\hline \\[-5pt]
+$e_I$ & 0 & 0 & $\left( \frac{289}{600} \right)^2 \! \left(\frac{46}{484}\right) \!\! \left(\frac{247}{484}\right)$ & 0\\ \\[-5pt]
+$e_J$ & 0 & 0 & 0 & 0\\\\[-5pt]
+$e_K$ & $\left( \frac{289}{600} \right)^2 \! \left(\frac{46}{484}\right) \!\! \left(\frac{247}{484}\right)$ & 0 & 0 & 0\\\\[-5pt]
+$e_H$ & 0 & 0 & 0 & 0 \\[5pt]
+\end{tabular}
+\end{center}
+\vspace{10pt}
+
+\noindent We can find the most likely haplotype pair by choosing the maxium value for $\delta_m$ at the final level.  In this example the two most likely pairs of haplotypes are equal as in this case, the individual's genotype is unphased.  The ordered edges used in producing these values found and are equal to $s_1 = (e_A,e_B)$, $s_2=(e_C,e_E)$, $s_3 = (e_F,e_G)$, $s_4=(e_I,e_K)$, and $s_1 = (e_B,e_A)$, $s_2=(e_E,e_C)$, $s_3 = (e_G,e_F)$, $s_4=(e_K,e_I) $ which are identical haplotype pairs.
+
 
 \newpage
 \section{Implementation}
